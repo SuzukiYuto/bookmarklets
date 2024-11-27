@@ -68,7 +68,7 @@
         if(t.id){
             o+=' data-original-id="'+t.id+'"';
         }
-        o+='><caption>'+h2T+'</caption>';
+        o+='>';
         t.rows.forEach(function(r,rI){
             o+='<tr>';
             for(var cI=0; cI<m; cI++){
