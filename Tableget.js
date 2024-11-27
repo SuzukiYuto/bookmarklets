@@ -69,6 +69,8 @@
             o+=' data-original-id="'+t.id+'"';
         }
         o+='>';
+        // ヘッダー開始
+        o+='<thead>';
         t.rows.forEach(function(r,rI){
             o+='<tr>';
             for(var cI=0; cI<m; cI++){
@@ -93,11 +95,15 @@
                 }
             }
             o+='</tr>';
+            // ヘッダー終了、ボディ開始
+            if(rI===0){
+                o+='</thead><tbody>';
+            }
         });
-        o+='</table></div></div><br>';
+        // ボディ終了
+        o+='</tbody></table></div></div><br>';
     });
-    o+='<script>function toggleColumns(i){var t=document.getElementById("table_"+i);if(!t)return;var c=t.querySelectorAll(".column-hidden");c.forEach(function(c){var d=window.getComputedStyle(c).display;c.style.display=d==="none"?"table-cell":"none"})}function toggleTable(i){var c=document.getElementById("container_"+i);if(!c)return;var t=c.querySelector(".table-container"),d=window.getComputedStyle(t).display;t.style.display=d==="none"?"block":"none"}$(document).ready(function(){$(".sortable").tablesorter()});<\/script>';
+    o+='<script>function toggleColumns(i){var t=document.getElementById("table_"+i);if(!t)return;var c=t.querySelectorAll(".column-hidden");c.forEach(function(c){var d=window.getComputedStyle(c).display;c.style.display=d==="none"?"table-cell":"none"})}function toggleTable(i){var c=document.getElementById("container_"+i);if(!c)return;var t=c.querySelector(".table-container"),d=window.getComputedStyle(t).display;t.style.display=d==="none"?"block":"none"}$(document).ready(function(){$(".sortable").each(function(){$(this).tablesorter();});});<\/script>';
     w.document.write(o);
     w.document.write('</body></html>');
-    w.document.close();
 })();
