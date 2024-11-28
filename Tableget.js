@@ -64,7 +64,7 @@
             }
         }
         var cH=s.map(function(s){return s===0});
-        o+='<div id="container_'+i+'"><button onclick="toggleColumns('+i+')" class="btn btn-primary">列の表示/非表示</button> <button onclick="toggleTable('+i+')" class="btn btn-secondary">テーブルの表示/非表示</button><div class="table-container"><table class="table table-bordered sortable" id="table_'+i+'"';
+        o+='<div id="container_'+i+'"><button onclick="toggleColumns('+i+')" class="btn btn-primary">非表示列の表示/非表示</button> <button onclick="toggleTable('+i+')" class="btn btn-secondary">テーブルの表示/非表示</button><div class="table-container"><table class="table table-bordered sortable" id="table_'+i+'"';
         if(t.id){
             o+=' data-original-id="'+t.id+'"';
         }
@@ -103,11 +103,7 @@
         // ボディ終了
         o+='</tbody></table></div></div><br>';
     });
-    o+='<script>function toggleColumns(i){var t=document.getElementById("table_"+i);if(!t)return;var c=t.querySelectorAll(".column-hidden");c.forEach(function(c){var d=window.getComputedStyle(c).display;c.style.display=d==="none"?"table-cell":"none"})}function toggleTable(i){var c=document.getElementById("container_"+i);if(!c)return;var t=c.querySelector(".table-container"),d=window.getComputedStyle(t).display;t.style.display=d==="none"?"block":"none"}$(document).ready(function(){$(".sortable").each(function(){$(this).tablesorter({
-      theme : 'bootstrap',
-      widgets: ['zebra', 'columns'],
-      headerTemplate: '{content} {icon}'
-    });});});<\/script>';
+    o+='<script>function toggleColumns(i){var t=document.getElementById("table_"+i);if(!t)return;var c=t.querySelectorAll(".column-hidden");c.forEach(function(c){var d=window.getComputedStyle(c).display;c.style.display=d==="none"?"table-cell":"none"})}function toggleTable(i){var c=document.getElementById("container_"+i);if(!c)return;var t=c.querySelector(".table-container"),d=window.getComputedStyle(t).display;t.style.display=d==="none"?"block":"none"}$(document).ready(function(){$(".sortable").each(function(){$(this).tablesorter();});});<\/script>';
     w.document.write(o);
     w.document.write('</body></html>');
 })();
