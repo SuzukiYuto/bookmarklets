@@ -1,8 +1,8 @@
 (function(){
     function h(e){
         while(e.parentElement){
-            e=e.parentElement;
-            if(e.tagName.toLowerCase()==='div' && e.classList.contains('GMChiled'))
+            e = e.parentElement;
+            if(e.tagName.toLowerCase() === 'div' && e.classList.contains('GMChiled'))
                 return true;
         }
         return false;
@@ -20,34 +20,55 @@
     t.forEach(function(table){
         var rows = Array.from(table.rows);
         var itemNumber = '';
-        var gmCellHeaderHTML = '';
+        var headers = [];
+        // ヘッダー行を特定し、ヘッダー情報を取得
         rows.forEach(function(row){
             var cells = Array.from(row.cells);
             var isHeader = cells.some(function(cell){ return cell.classList.contains('GMCellHeader') });
             if(isHeader){
-                // GMCellHeaderを持つ行の場合、Item NumberとGMCellHeaderのinnerHTMLを取得
+                headers = cells.map(function(cell){
+                    return cell.textContent.trim();
+                });
+            }
+        });
+        // データ行の処理
+        rows.forEach(function(row){
+            var cells = Array.from(row.cells);
+            var isHeader = cells.some(function(cell){ return cell.classList.contains('GMCellHeader') });
+            if(isHeader){
+                // Item Numberを取得
                 cells.forEach(function(cell){
                     if(cell.classList.contains('GMCellHeader')){
-                        gmCellHeaderHTML = cell.innerHTML.trim();
                         itemNumber = cell.textContent.trim();
                     }
                 });
             } else {
-                // データ行の場合、各セルの値を取得してCSVに追加
-                rowNumber++;
-                cells.forEach(function(cell){
+                // セルの値がない場合は無視
+                var hasValue = cells.some(function(cell){
                     var cellValue = cell.value !== undefined ? cell.value.trim() : cell.textContent.trim();
-                    var csvRow = [h2T, rowNumber, itemNumber, gmCellHeaderHTML, cellValue];
+                    return cellValue !== '';
+                });
+                if(!hasValue){
+                    return;
+                }
+                // データ行の処理
+                rowNumber++;
+                cells.forEach(function(cell, index){
+                    var cellValue = cell.value !== undefined ? cell.value.trim() : cell.textContent.trim();
+                    if(cellValue === ''){
+                        return; // セルの値がない場合は無視
+                    }
+                    var headerLabel = headers[index] || ''; // 対応するヘッダーを取得
+                    var csvRow = [h2T, rowNumber, itemNumber, headerLabel, cellValue];
                     csvData.push(csvRow);
                 });
             }
         });
     });
     // CSV文字列を作成
-    var csvContent = 'h2T,行番号,Item Number,GMCellHeaderのinnerHTML,セルの値\n';
+    var csvContent = 'h2T,行番号,Item Number,ラベル,セルの値\n';
     csvData.forEach(function(rowArray){
         var row = rowArray.map(function(field){
-            // フィールド内のカンマや改行、ダブルクォートをエスケープ
             var value = ('' + field).replace(/"/g, '""');
             if(value.search(/("|,|\n)/g) >= 0){
                 value = '"' + value + '"';
