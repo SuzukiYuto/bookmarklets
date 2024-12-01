@@ -183,7 +183,7 @@
         var bgColor = 'white';
 
         // data['IN']の値によって背景色を変更
-        if (data['IN']) {
+        if (data['QAT']) {
             if (data['QAT'].startsWith('In')) {
                 bgColor = 'lightblue';
             } else if (data['QAT'].startsWith('St')) {
