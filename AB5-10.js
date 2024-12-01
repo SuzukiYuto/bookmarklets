@@ -184,39 +184,39 @@
 　　};
 
 
-    // 更新された chk 関数
-    function chk(ItemNumber, headerLabel, reportlabel) {
-        var itemNumbers = ItemNumber.split(';');
-        var headerLabels = headerLabel.split(';');
-        var results = [];
+   function chk(ItemNumber, headerLabel, reportlabel) {
+    var itemNumbers = ItemNumber.split(';');
+    var headerLabels = headerLabel.split(';');
+    var results = [];
 
-        for(var i = 0; i < itemNumbers.length; i++) {
-            var iNumber = itemNumbers[i];
+    for(var i = 0; i < itemNumbers.length; i++) {
+        var iNumber = itemNumbers[i];
+        var valuesPerHeaderLabel = [];
+        for(var j = 0; j < headerLabels.length; j++) {
+            var hLabel = headerLabels[j];
             var values = [];
-            for(var j = 0; j < headerLabels.length; j++) {
-                var hLabel = headerLabels[j];
-                var found = false;
-                for(var k = 0; k < csvData.length; k++) {
-                    var row = csvData[k];
-                    if(row[2] === iNumber && row[3] === hLabel) {
-                        values.push(row[4]);
-                        found = true;
-                        break;
-                    }
-                }
-                if(!found) {
-                    values.push('not found');
+            for(var k = 0; k < csvData.length; k++) {
+                var row = csvData[k];
+                if(row[2] === iNumber && row[3] === hLabel) {
+                    values.push(row[4]);
                 }
             }
-            // headerLabel が複数の場合は ' - ' で連結
-            var valueStr = headerLabels.length > 1 ? values.join(' - ') : values.join('');
-            results.push(valueStr);
+            if(values.length === 0) {
+                values.push('not found');
+            }
+            // 各 headerLabel の値を '<br>' で連結
+            var valueStr = values.join('<br>');
+            valuesPerHeaderLabel.push(valueStr);
         }
-
-        // ItemNumber が複数の場合は ', ' で連結
-        var resultStr = itemNumbers.length > 1 ? results.join(', ') : results.join('');
-        return reportlabel + ': ' + resultStr;
+        // headerLabel が複数の場合は ' - ' で連結
+        var combinedValue = headerLabels.length > 1 ? valuesPerHeaderLabel.join(' - ') : valuesPerHeaderLabel.join('');
+        results.push(combinedValue);
     }
+
+    // ItemNumber が複数の場合は ', ' で連結
+    var resultStr = itemNumbers.length > 1 ? results.join(', ') : results.join('');
+    return reportlabel + ': ' + resultStr;
+}
 
     // html header作成
     const date = new Date();
@@ -229,13 +229,14 @@
     htmlContent += "<P><b>概要</b></P>"; 
     
      htmlContent += chk('AG0000002261', 'SV', '官能') + "<br>";
-     htmlContent += chk('AG0000002261', 'SV', '官能(社内)') + "<br>";
      htmlContent += chk('AG0000001114;AG000001117', 'SV', '外観') + "<br>";
      htmlContent += chk('AG0000002265', 'SV', '外観(日)') + "<br>";
       htmlContent += chk('AG0000001251', 'LL;UL', '比重20℃') + "<br>";
        htmlContent += chk('AG0000001260', 'LL;UL', '屈折20℃') + "<br>";
      htmlContent += chk('AG0000001321', 'LL;UL', '重金属') + "<br>";
     htmlContent += chk('AG0000002301', 'LL;UL', 'ヒ素') + "<br>";
+    htmlContent += "GB:(未実装、手動確認ください)" + "<br>";
+   
     htmlContent += "<hr>"; 
     
     //table
