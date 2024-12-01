@@ -17,64 +17,64 @@
         w = window.open('', '_blank');
     var csvData = [];
     var rowNumber = 0;
-       t.forEach(function(table){
+
+
+    t.forEach(function(table, tableIndex){
         var rows = Array.from(table.rows);
-        var itemNumber = '';
         var headers = [];
-        var itemNumberIndex = -1; // 'Item Number'の列インデックス
         // ヘッダー行を特定し、ヘッダー情報を取得
         for(var i = 0; i < rows.length; i++){
             var row = rows[i];
             var cells = Array.from(row.cells);
-            var isHeader = cells.some(function(cell){ return cell.classList.contains('GMCellHeader') });
+            var isHeader = cells.some(function(cell){ return cell.tagName.toLowerCase() === 'th' || cell.classList.contains('GMCellHeader') });
             if(isHeader){
                 headers = cells.map(function(cell){
                     return cell.textContent.trim();
                 });
-                // 'Item Number'の列インデックスを取得
-                itemNumberIndex = headers.indexOf('Item Number');
                 break; // ヘッダー行は一つだけと仮定
             }
-        }
-        if(itemNumberIndex === -1){
-            // 'Item Number'列が見つからなかった場合、次のテーブルへ
-            return;
         }
         // データ行の処理
         for(var i = 0; i < rows.length; i++){
             var row = rows[i];
             var cells = Array.from(row.cells);
-            var isHeader = cells.some(function(cell){ return cell.classList.contains('GMCellHeader') });
+            var isHeader = cells.some(function(cell){ return cell.tagName.toLowerCase() === 'th' || cell.classList.contains('GMCellHeader') });
             if(isHeader){
                 continue; // ヘッダー行はスキップ
             }
-            // セルの値がない場合は無視
-            var hasValue = cells.some(function(cell){
-                var cellValue = cell.value !== undefined ? cell.value.trim() : cell.textContent.trim();
-                return cellValue !== '';
-            });
-            if(!hasValue){
+            var itemNumber = '';
+            var startIndex = -1;
+            // 行内で"AG"で始まるセルを探す
+            for(var j = 0; j < cells.length; j++){
+                var cellValue = cells[j].textContent.trim();
+                if(cellValue.startsWith('AG')){
+                    itemNumber = cellValue;
+                    startIndex = j;
+                    break;
+                }
+            }
+            if(startIndex === -1){
+                // "AG"で始まるセルが見つからなかった場合、次の行へ
                 continue;
             }
             // データ行の処理
             rowNumber++;
-            // itemNumberを取得
-            if(itemNumberIndex >= 0 && itemNumberIndex < cells.length){
-                itemNumber = cells[itemNumberIndex].textContent.trim();
-            } else {
-                itemNumber = ''; // 該当セルがない場合は空文字列
-            }
-            cells.forEach(function(cell, index){
+            for(var j = startIndex; j < cells.length; j++){
+                var cell = cells[j];
                 var cellValue = cell.value !== undefined ? cell.value.trim() : cell.textContent.trim();
                 if(cellValue === ''){
-                    return; // セルの値がない場合は無視
+                    continue; // セルの値がない場合は無視
                 }
-                var headerLabel = headers[index] || ''; // 対応するヘッダーを取得
+                var headerLabel = headers[j] || ''; // 対応するヘッダーを取得
                 var csvRow = [h2T, rowNumber, itemNumber, headerLabel, cellValue];
                 csvData.push(csvRow);
-            });
+            }
         }
     });
+
+
+
+
     // CSV文字列を作成
     var csvContent = 'h2T,行番号,Item Number,ラベル,セルの値\n';
     csvData.forEach(function(rowArray){
