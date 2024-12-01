@@ -78,8 +78,8 @@
                     // "Item Number"以降のセルをheadersに格納
                     headers = cells.slice(itemNumberIndex).map(function(cell){
                         var headerLabel = '';
-                        // cell内の<span>または<img>を探す
-                        var headerElement = cell.querySelector('span[title], img[title]');
+                        // cell内の<span>タグのみを探す
+                        var headerElement = cell.querySelector('span[title]');
                         if(headerElement){
                             headerLabel = headerElement.getAttribute('title').trim();
                         } else {
