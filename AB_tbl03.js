@@ -49,14 +49,13 @@ javascript:(function(){
         var headerRow = rows[headerRowIndex];
         var headerCells = Array.from(headerRow.cells);
         headers = [];
-        var headerCellIndex = 0;
         for(var i = 0; i < headerCells.length; i++){
             var cell = headerCells[i];
+            var headerLabel = '';
             if(cell.classList.contains('GMCellHeader')){
-                var headerLabel = cell.textContent.trim();
-                headers[headerCellIndex] = headerLabel;
+                headerLabel = cell.textContent.trim();
             }
-            headerCellIndex++;
+            headers.push(headerLabel);
         }
 
         // データ行の処理
@@ -88,12 +87,12 @@ javascript:(function(){
             }
             // ヘッダーとデータセルを対応させてCSVに追加
             for(var k = 0; k < dataCells.length; k++){
-                var headerIndex = k;
+                var headerIndex = agCellIndex + k;
                 var headerLabel = '';
                 if(k == 0){
                     headerLabel = 'Item Number';
                 } else {
-                    headerLabel = headers[agCellIndex + k] || '';
+                    headerLabel = headers[headerIndex] || '';
                 }
                 var cellValue = dataCells[k];
                 var csvRow = [h2T, rowNumber + 1, itemNumber, headerLabel, cellValue];
@@ -119,7 +118,7 @@ javascript:(function(){
 
     // 新しいウィンドウにCSVデータを表示
     var w = window.open('', '_blank');
-    w.document.write('<!DOCTYPE html><html><head><title>CSVデータ</title></head><body>');
+    w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>CSVデータ</title></head><body>');
     w.document.write('<pre>' + csvContent + '</pre>');
     // CSVファイルをダウンロードできるリンクを追加
     var encodedUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
