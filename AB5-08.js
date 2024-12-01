@@ -173,7 +173,7 @@
     // HTMLテーブルを作成
     var htmlContent = '<!DOCTYPE html><html><head><title>データテーブル</title></head><body>';
     htmlContent += '<table border="1" cellpadding="5" cellspacing="0">';
-    htmlContent += '<tr><th></th><th>' + h2T + '</th><th>Comment</th></tr>';
+    htmlContent += '<tr><th></th><th>' + h2T + '</th><th>Comment</th><th></th></tr>';
 
     // SPを用いてデータを表示
     Object.keys(SP).forEach(function(rowNum){
@@ -194,7 +194,7 @@
 
         htmlContent += '<tr><td>' + rowNum + '</TD><TD>';
         htmlContent += (data['IN'] || '') + '</TD><TD>';
-        htmlContent += '[<font color=' + bgColor +'>' + (data['QAT'] || '') + '</font>] ' + (data['DJ'] || '') + '</br>';
+        htmlContent += '[<span background-color=' + bgColor +';>' + (data['QAT'] || '') + '</span>] ' + (data['DJ'] || '') + '</br>';
         htmlContent += (data['LL'] || '') + ' - ' + (data['UL'] || '')  + ' ' + (data['USN'] || '') + ', ';
         htmlContent += (data['SV'] || '') + '<br>';        
         htmlContent += (data['TFV'] || '') + ' | ' + (data['TC2'] || '') + '<br>';      
