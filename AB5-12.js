@@ -236,7 +236,7 @@
     htmlContent += '<b>AB整形結果：</b><br>Output Date: ' + getFormattedDate(date) + '<br>';
     htmlContent += innerTexts ;
     
-    htmlContent += "<P><b>概要</b><br>"; 
+    htmlContent += "<P><b>概要</b>(" + h2T + ")<br>"; 
     
      htmlContent += chk('AG0000002261', 'SV', '官能') + "<br>";
      htmlContent += chk('AG0000001114;AG0000001117', 'SV', '外観') + "<br>";
