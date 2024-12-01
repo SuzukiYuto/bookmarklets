@@ -194,7 +194,7 @@
 
         htmlContent += '<tr><td>' + rowNum + '</TD><TD>';
         htmlContent += (data['IN'] || '') + '</TD><TD>';
-        htmlContent += '[<span background-color=' + bgColor +';>' + (data['QAT'] || '') + '</span>] ' + (data['DJ'] || '') + '</br>';
+        htmlContent += '[<span background-color:' + bgColor +';>' + (data['QAT'] || '') + '</span>] ' + (data['DJ'] || '') + '</br>';
         htmlContent += (data['ETR'] || '') + ' | ' +(data['LL'] || '') + ' - ' + (data['UL'] || '')  + ' (' + (data['EDADP'] || '') + ')' + (data['USN'] || '') + ', ';
         htmlContent += (data['SV'] || '') + '<br>';        
         htmlContent += (data['TF'] || '') + ' | ' +(data['TFV'] || '') + ' | ' + (data['TC2'] || '') + '<br>';      
