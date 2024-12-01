@@ -46,6 +46,16 @@
         'Item (Supplier)': 'I_S'
     };
 
+    // 略語を取得する関数（部分一致対応）
+    function getAbbreviation(headerLabel){
+        for (var key in headerAbbreviations){
+            if(headerLabel.includes(key)){
+                return headerAbbreviations[key];
+            }
+        }
+        return headerLabel; // 略語が見つからない場合は元のラベルを返す
+    }
+
     // ヘッダー行を特定し、ヘッダー情報を取得
     for(var tableIndex = 0; tableIndex < t.length; tableIndex++){
         var table = t[tableIndex];
@@ -75,8 +85,8 @@
                         } else {
                             headerLabel = cell.textContent.trim();
                         }
-                        // ヘッダーラベルを略語に置き換え
-                        return headerAbbreviations[headerLabel] || headerLabel;
+                        // ヘッダーラベルを略語に置き換え（部分一致）
+                        return getAbbreviation(headerLabel);
                     });
                     break; // ヘッダー行は一つだけと仮定
                 }
@@ -184,9 +194,9 @@
 
         // data['IN']の値によって背景色を変更
         if (data['IN']) {
-            if (data['QAT'].startsWith('In')) {
+            if (data['QAT'] && data['QAT'].startsWith('In')) {
                 bgColor = 'lightblue';
-            } else if (data['QAT'].startsWith('St')) {
+            } else if (data['QAT'] && data['QAT'].startsWith('St')) {
                 bgColor = 'lightgreen';
             }
             // 他の条件も追加可能
