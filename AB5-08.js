@@ -195,9 +195,9 @@
         htmlContent += '<tr><td>' + rowNum + '</TD><TD>';
         htmlContent += (data['IN'] || '') + '</TD><TD>';
         htmlContent += '[<span background-color=' + bgColor +';>' + (data['QAT'] || '') + '</span>] ' + (data['DJ'] || '') + '</br>';
-        htmlContent += (data['LL'] || '') + ' - ' + (data['UL'] || '')  + ' ' + (data['USN'] || '') + ', ';
+        htmlContent += (data['ETR'] || '') + ' | ' +(data['LL'] || '') + ' - ' + (data['UL'] || '')  + ' (' + (data['EDADP'] || '') + ')' + (data['USN'] || '') + ', ';
         htmlContent += (data['SV'] || '') + '<br>';        
-        htmlContent += (data['TFV'] || '') + ' | ' + (data['TC2'] || '') + '<br>';      
+        htmlContent += (data['TF'] || '') + ' | ' +(data['TFV'] || '') + ' | ' + (data['TC2'] || '') + '<br>';      
         htmlContent += '</td><td>' + (data['CM'] || '') + '</td>';
         htmlContent += '</tr>';
     });
