@@ -194,7 +194,7 @@
 
         htmlContent += '<tr><td>' + rowNum + '</TD><TD>';
         htmlContent += (data['IN'] || '') + '</TD><TD>';
-        htmlContent += '[<font color=' + bgcolor ">" + (data['QAT'] || '') + '</font>] ' + (data['DJ'] || '') + '</br>';
+        htmlContent += '[<font color=' + bgcolor + ">" + (data['QAT'] || '') + '</font>] ' + (data['DJ'] || '') + '</br>';
         htmlContent += (data['LL'] || '') + ' - ' + (data['UL'] || '')  + ' ' + (data['USN'] || '') + ', ';
         htmlContent += (data['SV'] || '') + '<br>';        
         htmlContent += (data['TFV'] || '') + ' | ' + (data['TC2'] || '') + '<br>';      
