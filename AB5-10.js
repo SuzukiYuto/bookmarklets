@@ -223,21 +223,21 @@
 
     var htmlContent = '<!DOCTYPE html><html><head><title>' + h2T + '</title>';
     htmlContent += '<style>.aaa {background-color: #4d9bc1;color: #fff;padding: 0 0.1em;} .bbb {background-color: #4d1bc1;color: #fff;padding: 0 0.1em;}</style></head><body>';
-    htmlContent += 'Output Date: ' + getFormattedDate(date) + '<br>';
+    htmlContent += '<b>AB整形結果：</b><br>Output Date: ' + getFormattedDate(date) + '<br>';
     htmlContent += innerTexts ;
     
-    htmlContent += "<P><b>概要</b></P>"; 
+    htmlContent += "<P><b>概要</b><br>"; 
     
      htmlContent += chk('AG0000002261', 'SV', '官能') + "<br>";
-     htmlContent += chk('AG0000001114;AG000001117', 'SV', '外観') + "<br>";
+     htmlContent += chk('AG0000001114;AG0000001117', 'SV', '外観') + "<br>";
      htmlContent += chk('AG0000002265', 'SV', '外観(日)') + "<br>";
       htmlContent += chk('AG0000001251', 'LL;UL', '比重20℃') + "<br>";
        htmlContent += chk('AG0000001260', 'LL;UL', '屈折20℃') + "<br>";
-     htmlContent += chk('AG0000001321', 'LL;UL', '重金属') + "<br>";
-    htmlContent += chk('AG0000002301', 'LL;UL', 'ヒ素') + "<br>";
-    htmlContent += "GB:(未実装、手動確認ください)" + "<br>";
+     htmlContent += chk('AG0000001321', 'LL;UL', '重金属') + chk('AG0000001321', 'USN', '') + "<br>";
+    htmlContent += chk('AG0000002301', 'LL;UL', 'ヒ素') + chk('AG0000002301', 'USN', '') +  "<br>";
+    htmlContent += "GB: (未実装、手動確認ください)" + "<br></P>";
    
-    htmlContent += "<hr>"; 
+    htmlContent += "<hr><b>詳細</b><br>"; 
     
     //table
     
