@@ -171,7 +171,8 @@
     });
 
     // HTMLテーブルを作成
-    var htmlContent = '<!DOCTYPE html><html><head><title>データテーブル</title></head><body>';
+    var htmlContent = '<!DOCTYPE html><html><head><title>' + h2T + '</title></head><body>';
+    htmlContent += 'Output: ' + Date.now();
     htmlContent += '<table border="1" cellpadding="5" cellspacing="0">';
     htmlContent += '<tr><th></th><th>' + h2T + '</th><th>Value</th><th>Comment etc.</th></tr>';
 
@@ -202,7 +203,7 @@
         htmlContent += '</tr>';
     });
 
-    htmlContent += '</table>';
+    htmlContent += '</table><p></p>';
     htmlContent += csvContent
     htmlContent += '</body></html>';
 
