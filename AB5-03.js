@@ -157,4 +157,24 @@
 
     // 新しいウィンドウにHTMLテーブルを表示
     w.document.write(htmlContent);
+    
+     // CSV文字列を作成
+    var csvContent = 'h2T,行番号,Item Number,ラベル,セルの値\n';
+    csvData.forEach(function(rowArray){
+        var row = rowArray.map(function(field){
+            var value = ('' + field).replace(/"/g, '""');
+            if(value.search(/("|,|\n)/g) >= 0){
+                value = '"' + value + '"';
+            }
+            return value;
+        }).join(',');
+        csvContent += row + '\n';
+    });
+    // 新しいウィンドウにCSVデータを表示
+    w.document.write('<!DOCTYPE html><html><head><title>CSVデータ</title></head><body>');
+    w.document.write('<pre>' + csvContent + '</pre>');
+    // CSVファイルをダウンロードできるリンクを追加
+    var encodedUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
+    w.document.write('<a href="'+ encodedUri +'" download="data.csv">CSVファイルをダウンロード</a>');
+    w.document.write('</body></html>');
 })();
