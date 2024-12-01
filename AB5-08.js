@@ -176,7 +176,7 @@
 
     // HTMLテーブルを作成
     var htmlContent = '<!DOCTYPE html><html><head><title>' + h2T + '</title></head><body>';
-    htmlContent += 'Output: ' + Date.now() + '<br>';
+    htmlContent += 'Output Date: ' + Date.now().toLocaleString() + '<br>';
     htmlContent += innerTexts 
     htmlContent += '<table border="1" cellpadding="5" cellspacing="0">';
     htmlContent += '<tr><th></th><th>' + h2T + '</th><th>Value</th><th>Comment etc.</th></tr>';
