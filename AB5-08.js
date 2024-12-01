@@ -175,9 +175,10 @@
     });
 
     // HTMLテーブルを作成
+    const getFormattedDate = (date) => date.toLocaleDateString();
     var htmlContent = '<!DOCTYPE html><html><head><title>' + h2T + '</title>';
     htmlContent += '<style>.aaa {background-color: #4d9bc1;color: #fff;padding: 0 0.1em;} .bbb {background-color: #4d1bc1;color: #fff;padding: 0 0.1em;}</style></head><body>';
-    htmlContent += 'Output Date: ' + Date.now().toLocaleString() + '<br>';
+    htmlContent += 'Output Date: ' + getformattedDate + '<br>';
     htmlContent += innerTexts 
     htmlContent += '<table border="1" cellpadding="5" cellspacing="0">';
     htmlContent += '<tr><th></th><th>' + h2T + '</th><th>Value</th><th>Comment etc.</th></tr>';
