@@ -12,6 +12,10 @@
         alert('classが"GMSection"のテーブルが見つかりませんでした。');
         return;
     }
+        var wrapper = document.querySelector('#header_tab_wrapper');
+　　var paragraphs = wrapper.querySelectorAll('p');
+　　var innerTexts = Array.from(paragraphs).map(p => p.innerText);
+　　
     var h2 = document.querySelector('.column_one.layout h2'),
         h2T = h2 ? h2.textContent.trim() : '',
         w = window.open('', '_blank');
