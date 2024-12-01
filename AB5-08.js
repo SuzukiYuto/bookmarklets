@@ -12,6 +12,10 @@
         alert('classが"GMSection"のテーブルが見つかりませんでした。');
         return;
     }
+    var wrapper = document.querySelector('#header_tab_wrapper');
+　　var paragraphs = wrapper.querySelectorAll('p');
+　　var innerTexts = Array.from(paragraphs).map(p => p.innerText);
+    
     var h2 = document.querySelector('.column_one.layout h2'),
         h2T = h2 ? h2.textContent.trim() : '',
         w = window.open('', '_blank');
@@ -172,7 +176,8 @@
 
     // HTMLテーブルを作成
     var htmlContent = '<!DOCTYPE html><html><head><title>' + h2T + '</title></head><body>';
-    htmlContent += 'Output: ' + Date.now();
+    htmlContent += 'Output: ' + Date.now() + '<br>';
+    htmlContent += innerTexts 
     htmlContent += '<table border="1" cellpadding="5" cellspacing="0">';
     htmlContent += '<tr><th></th><th>' + h2T + '</th><th>Value</th><th>Comment etc.</th></tr>';
 
