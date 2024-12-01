@@ -180,9 +180,10 @@
         var data = SP[rowNum].data;
 
         htmlContent += '<tr><td>';
-        htmlContent += '[' + (data['QAT'] || '') + ']' + (data['DJ'] || '') + '</br>';
-        htmlContent += (data['LL'] || '') + ' - ' + (data['UL'] || '') + ', ';
-        htmlContent += (data['SV'] || '') + '</br>';        
+        htmlContent += '[' + (data['QAT'] || '') + '] ' + (data['DJ'] || '') + '</br>';
+        htmlContent += (data['LL'] || '') + ' - ' + (data['UL'] || '') + ' (' + (data['UL'] || '') -  (data['LL'] || '') + ')' + (data['USN'] || '') + ', ';
+        htmlContent += (data['SV'] || '') + '<br>';        
+        htmlContent += (data['TFV'] || '') + ', ' + (data['TC2'] || '') + '<br>';      
         htmlContent += '</td><td>' + (data['CM'] || '') + '</td>';
         htmlContent += '</tr>';
     });
