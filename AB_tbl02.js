@@ -49,15 +49,14 @@ javascript:(function(){
         var headerRow = rows[headerRowIndex];
         var headerCells = Array.from(headerRow.cells);
         headers = [];
+        var headerCellIndex = 0;
         for(var i = 0; i < headerCells.length; i++){
             var cell = headerCells[i];
             if(cell.classList.contains('GMCellHeader')){
                 var headerLabel = cell.textContent.trim();
-                headers.push(headerLabel);
-            } else {
-                // インデックスを維持するために空文字を追加
-                headers.push('');
+                headers[headerCellIndex] = headerLabel;
             }
+            headerCellIndex++;
         }
 
         // データ行の処理
@@ -89,12 +88,12 @@ javascript:(function(){
             }
             // ヘッダーとデータセルを対応させてCSVに追加
             for(var k = 0; k < dataCells.length; k++){
-                var headerIndex = agCellIndex + k;
+                var headerIndex = k;
                 var headerLabel = '';
                 if(k == 0){
                     headerLabel = 'Item Number';
                 } else {
-                    headerLabel = headers[headerIndex] || '';
+                    headerLabel = headers[agCellIndex + k] || '';
                 }
                 var cellValue = dataCells[k];
                 var csvRow = [h2T, rowNumber + 1, itemNumber, headerLabel, cellValue];
