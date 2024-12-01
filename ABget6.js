@@ -17,8 +17,10 @@
         w = window.open('', '_blank');
     var csvData = [];
     var rowNumber = 0;
-
-
+    t.forEach(function(table, tableIndex){
+        var rows = Array.from(table.rows);
+        var headers = [];
+        // ヘッダー行を特定し、ヘッダー情報を取得
         for(var i = 0; i < rows.length; i++){
             var row = rows[i];
             var cells = Array.from(row.cells);
@@ -113,10 +115,6 @@
             }
         }
     });
-
-
-
-
     // CSV文字列を作成
     var csvContent = 'h2T,行番号,Item Number,ラベル,セルの値\n';
     csvData.forEach(function(rowArray){
