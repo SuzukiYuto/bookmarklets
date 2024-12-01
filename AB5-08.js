@@ -175,7 +175,8 @@
     });
 
     // HTMLテーブルを作成
-    var htmlContent = '<!DOCTYPE html><html><head><title>' + h2T + '</title></head><body>';
+    var htmlContent = '<!DOCTYPE html><html><head><title>' + h2T + '</title>';
+    htmlContent += '<style>.aaa {background-color: #4d9bc1;color: #fff;padding: 0 0.1em;} .bbb {background-color: #4d1bc1;color: #fff;padding: 0 0.1em;}</style></head><body>';
     htmlContent += 'Output Date: ' + Date.now().toLocaleString() + '<br>';
     htmlContent += innerTexts 
     htmlContent += '<table border="1" cellpadding="5" cellspacing="0">';
@@ -191,16 +192,16 @@
         // data['IN']の値によって背景色を変更
         if (data['QAT']) {
             if (data['QAT'].startsWith('In')) {
-                bgColor = 'lightblue';
+                style_str = 'aaa';
             } else if (data['QAT'].startsWith('St')) {
-                bgColor = 'lightgreen';
+                style_str = 'bbb';
             }
             // 他の条件も追加可能
         }
 
         htmlContent += '<tr><td>' + rowNum + '</TD><TD>';
         htmlContent += (data['IN'] || '') + '</TD><TD>';
-        htmlContent += '[<span background-color:' + bgColor +';>' + (data['QAT'] || '') + '</span>] ' + (data['DJ'] || '') + '</br>';
+        htmlContent += '[<span class=' + bgColor +';>' + (data['QAT'] || '') + '</span>] ' + (data['DJ'] || '') + '</br>';
         htmlContent += (data['ETR'] || '') + ' | ' +(data['LL'] || '') + ' - ' + (data['UL'] || '')  + ' (' + (data['EDADP'] || '') + ')' + (data['USN'] || '') + ', ';
         htmlContent += (data['SV'] || '') + '<br>';        
         htmlContent += (data['TF'] || '') + ' | ' +(data['TFV'] || '') + ' | ' + (data['TC2'] || '') + '<br>';      
