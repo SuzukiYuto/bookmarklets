@@ -245,7 +245,8 @@
        htmlContent += chk('AG0000001260', 'LL;UL', '屈折20℃') + "<br>";
      htmlContent += chk('AG0000001321', 'LL;UL', '重金属') + chk('AG0000001321', 'USN', '') + "<br>";
     htmlContent += chk('AG0000002301', 'LL;UL', 'ヒ素') + chk('AG0000002301', 'USN', '') +  "<br>";
-    htmlContent += "GB: (未実装、手動確認ください)" + "<br></P>";
+    htmlContent += "GB: (未実装、手動確認ください)" + "<br>";
+    htmlContent += "それ以外: (実装予定)" + "<br></P>";
    
     htmlContent += "<hr><b>詳細</b><br>"; 
     
