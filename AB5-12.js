@@ -276,7 +276,10 @@
         htmlContent += '[<span class=' + style_str +'>' + (data['QAT'] || '') + '</span>] <b>' + (data['DJ'] || '') + '</b></br>';
         htmlContent += (data['ETR'] || '') + ' | ' +(data['LL'] || '') + ' - ' + (data['UL'] || '')  + ' (' + (data['EDADP'] || '') + ')' + (data['USN'] || '') + ', ';
         htmlContent += (data['SV'] || '') + '<br>';        
-        htmlContent += (data['TF'] || '') + ' | ' +(data['TFV'] || '') + ' | ' + (data['TC2'] || '') + '<br>';      
+        htmlContent += (data['TF'] || '') + ' | '; 
+        htmlContent += (data['QAT'] || '') + ' | '; 
+        htmlContent += (data['GVS'] || '') + ' | '; 
+        htmlContent += (data['TC2'] || '') + '<br>';      
         htmlContent += '</td><td>' + (data['CM'] || '') + '</td>';
         htmlContent += '</tr>';
     });
