@@ -48,15 +48,15 @@
     s.type='text/javascript';
     s.src='https://code.jquery.com/jquery-3.3.1.min.js';
     s.onload=function(){
-        var rb='<input type="radio" name="showAll" onclick="showAllRows();" checked> Show All <input type="radio" name="showAll" onclick="hideEmptyRows();"> Hide Empty Rows<br>';
+        var rb='<input type="radio" name="showAll" onclick="showAllRows();" checked> すべての項目を表示 <input type="radio" name="showAll" onclick="hideEmptyRows();"> 空の行を隠す<br>';
         w.document.body.innerHTML+=rb;
         var db=w.document.createElement('button');
         db.id='downloadCsv';
-        db.innerText='Download CSV';
+        db.innerText='データをディスクに保存...';
         w.document.body.appendChild(db);
         var lb=w.document.createElement('button');
         lb.id='loadCsv';
-        lb.innerText='Load CSV';
+        lb.innerText='保存したデータを並べる';
         w.document.body.appendChild(lb);
         w.document.body.appendChild(w.document.createElement('br'));
         w.document.body.appendChild(w.document.createElement('br'));
