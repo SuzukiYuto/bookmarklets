@@ -75,6 +75,8 @@
                 th.appendChild(w.document.createTextNode(h));
                 hr.appendChild(th);
             });
+            // 強調表示に使用する色の配列を定義
+            var highlightColors = ['lightsalmon', 'lightgreen', 'lightblue', 'khaki', 'plum', 'lightgrey'];
             for(var id in d){
                 var data=d[id],row=t.insertRow();
                 row.id='row'+id;
@@ -88,7 +90,9 @@
                     var cv=row.insertCell();
                     cv.appendChild(w.document.createTextNode(v||''));
                     if(i>0&&data.v[0]!=undefined&&v!=undefined&&data.v[0]!==v){
-                        cv.style.backgroundColor='red';
+                        // インデックスに基づいて色を選択
+                        var colorIndex = (i - 1) % highlightColors.length;
+                        cv.style.backgroundColor = highlightColors[colorIndex];
                     }
                 });
             }
