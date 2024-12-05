@@ -52,15 +52,15 @@
         ts.type='text/javascript';
         ts.src='https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.min.js';
         ts.onload=function(){
-            var rb='<input type="radio" name="showAll" onclick="showAllRows();" checked> すべての項目を表示 <input type="radio" name="showAll" onclick="hideEmptyRows();"> 空の項目を隠す<br>';
+            var rb='<input type="radio" name="showAll" onclick="showAllRows();" checked> すべての項目を表示 <input type="radio" name="showAll" onclick="hideEmptyRows();"> 空の行を隠す<br>';
             w.document.body.innerHTML+=rb;
             var db=w.document.createElement('button');
             db.id='downloadCsv';
-            db.innerText='保存...';
+            db.innerText='データをディスクに保存...';
             w.document.body.appendChild(db);
             var lb=w.document.createElement('button');
             lb.id='loadCsv';
-            lb.innerText='横に並べて表示';
+            lb.innerText='保存したデータを並べる';
             w.document.body.appendChild(lb);
             w.document.body.appendChild(w.document.createElement('br'));
             w.document.body.appendChild(w.document.createElement('br'));
@@ -104,7 +104,16 @@
             }
             rebuildTable();
             db.onclick=function(){
-                var csv='\uFEFF', headers=['Index','ID','Label'].concat(vh); // CSVのヘッダーにIDを含める
+                // コメントの入力を促す
+                var comment = prompt("コメントを入力してください：");
+                // 現在の日時を取得
+                var now = new Date();
+                var dateString = now.getFullYear() + "/" + (now.getMonth()+1) + "/" + now.getDate() + " " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
+                var csv='\uFEFF';
+                // コメントと日時をCSVの先頭に追加
+                csv += '"コメント","'+(comment ? comment.replace(/"/g,'""') : '')+'"\n';
+                csv += '"日時","'+dateString+'"\n\n';
+                var headers=['Index','ID','Label'].concat(vh); // CSVのヘッダーにIDを含める
                 csv+=headers.map(function(h){return '"'+h.replace(/"/g,'""')+'"';}).join(',')+'\n';
                 for(var id in d){
                     var data=d[id], row=[data.i, data.id, data.l]; // CSVのデータにIDを含める
@@ -115,7 +124,8 @@
                     });
                     csv+=row.map(function(f){return '"'+f+'"';}).join(',')+'\n';
                 }
-                var now=new Date(), ymd=[now.getFullYear().toString().slice(-2),(now.getMonth()+1).toString().padStart(2,'0'),now.getDate().toString().padStart(2,'0')].join(''), hms=[now.getHours().toString().padStart(2,'0'),now.getMinutes().toString().padStart(2,'0'),now.getSeconds().toString().padStart(2,'0')].join('');
+                var ymd=[now.getFullYear().toString().slice(-2),(now.getMonth()+1).toString().padStart(2,'0'),now.getDate().toString().padStart(2,'0')].join('');
+                var hms=[now.getHours().toString().padStart(2,'0'),now.getMinutes().toString().padStart(2,'0'),now.getSeconds().toString().padStart(2,'0')].join('');
                 var filename=title+ymd+hms+'.csv';
                 var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}), link=w.document.createElement('a');
                 link.href=URL.createObjectURL(blob);
@@ -162,9 +172,18 @@
                 return arrData;
             }
             function processLoadedCSV(csvData){
-                var pd = CSVToArray(csvData), headers = pd[0], vi = vh.length;
+                var pd = CSVToArray(csvData), headers = [], dataStartIndex = 0;
+                // コメントと日時の行をスキップする
+                for(var i = 0; i < pd.length; i++){
+                    if(pd[i].length === 0){
+                        dataStartIndex = i + 1;
+                        break;
+                    }
+                }
+                headers = pd[dataStartIndex];
+                var vi = vh.length;
                 vh.push('Value' + (vi + 1));
-                for(var i = 1; i < pd.length; i++){
+                for(var i = dataStartIndex + 1; i < pd.length; i++){
                     var row = pd[i], rowData = {};
                     for(var j = 0; j < headers.length; j++){
                         rowData[headers[j]] = row[j];
