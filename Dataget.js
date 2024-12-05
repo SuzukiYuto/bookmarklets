@@ -52,15 +52,15 @@
         ts.type='text/javascript';
         ts.src='https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.min.js';
         ts.onload=function(){
-            var rb='<input type="radio" name="showAll" onclick="showAllRows();" checked> すべての項目を表示 <input type="radio" name="showAll" onclick="hideEmptyRows();"> 空の行を隠す<br>';
+            var rb='<input type="radio" name="showAll" onclick="showAllRows();" checked> すべての項目を表示 <input type="radio" name="showAll" onclick="hideEmptyRows();"> 空の項目を隠す<br>';
             w.document.body.innerHTML+=rb;
             var db=w.document.createElement('button');
             db.id='downloadCsv';
-            db.innerText='データをディスクに保存...';
+            db.innerText='保存...';
             w.document.body.appendChild(db);
             var lb=w.document.createElement('button');
             lb.id='loadCsv';
-            lb.innerText='保存したデータを並べる';
+            lb.innerText='横に並べて表示';
             w.document.body.appendChild(lb);
             w.document.body.appendChild(w.document.createElement('br'));
             w.document.body.appendChild(w.document.createElement('br'));
