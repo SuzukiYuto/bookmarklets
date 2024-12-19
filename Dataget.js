@@ -111,7 +111,7 @@
                 var dateString = now.getFullYear() + "/" + (now.getMonth()+1) + "/" + now.getDate() + " " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
                 var csv='\uFEFF';
                 // コメントと日時をCSVの先頭に追加
-                csv += '"コメント","'+(comment ? comment.replace(/"/g,'""')+'") : '')+'"\n';
+                csv += '"コメント","' + (comment ? comment.replace(/"/g, '""') : '') + '"\n';
                 csv += '"日時","'+dateString+'"\n\n';
                 var headers=['Index','ID','Label'].concat(vh); // CSVのヘッダーにIDを含める
                 csv+=headers.map(function(h){return '"'+h.replace(/"/g,'""')+'"';}).join(',')+'\n';
