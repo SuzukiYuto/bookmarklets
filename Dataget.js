@@ -111,7 +111,7 @@
                 var dateString = now.getFullYear() + "/" + (now.getMonth()+1) + "/" + now.getDate() + " " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
                 var csv='\uFEFF';
                 // コメントと日時をCSVの先頭に追加
-                csv += '"コメント","'+(comment ? comment.replace(/"/g,'""') : '')+'"\n';
+                csv += '"コメント","'+(comment ? comment.replace(/"/g,'""')+'") : '')+'"\n';
                 csv += '"日時","'+dateString+'"\n\n';
                 var headers=['Index','ID','Label'].concat(vh); // CSVのヘッダーにIDを含める
                 csv+=headers.map(function(h){return '"'+h.replace(/"/g,'""')+'"';}).join(',')+'\n';
@@ -152,23 +152,55 @@
                 w.document.body.appendChild(fi);
                 fi.click();
             };
-            function CSVToArray(strData, strDelimiter){
-                strDelimiter = (strDelimiter || ",");
-                var objPattern = new RegExp(("(\\"+strDelimiter+"|\\r?\\n|\\r|^)" + "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" + "([^\"\\"+strDelimiter+"\\r\\n]*))"), "gi");
-                var arrData = [[]], arrMatches = null;
-                while(arrMatches = objPattern.exec(strData)){
+            // 修正されたCSVToArray関数
+            function CSVToArray(strData, strDelimiter) {
+                // デリミタが指定されていない場合はカンマを使用
+                strDelimiter = strDelimiter || ",";
+
+                // 結果を格納する配列
+                var arrData = [];
+                // 各行を保持する変数
+                var arrMatches = null;
+
+                // 正規表現パターンの作成
+                var regexPattern = new RegExp(
+                    // デリミタ、改行、または行の先頭をキャプチャ
+                    "(\\\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+                    // 引用符で囲まれたフィールドをキャプチャ
+                    "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+                    // 引用符で囲まれていないフィールドをキャプチャ
+                    "([^\"\\" + strDelimiter + "\\r\\n]*))",
+                    "gi"
+                );
+
+                // 正規表現を使用してデータをパース
+                while ((arrMatches = regexPattern.exec(strData)) !== null) {
                     var strMatchedDelimiter = arrMatches[1];
-                    if(strMatchedDelimiter.length && strMatchedDelimiter !== strDelimiter){
+                    var strMatchedValue;
+
+                    // 新しい行が開始された場合、arrDataに新しい配列を追加
+                    if (strMatchedDelimiter.length && strMatchedDelimiter !== strDelimiter) {
                         arrData.push([]);
                     }
-                    var strMatchedValue;
-                    if(arrMatches[2]){
-                        strMatchedValue = arrMatches[2].replace(/""/g, '"');
-                    }else{
+
+                    // 引用符で囲まれた値を処理
+                    if (arrMatches[2]) {
+                        // エスケープされた引用符を元に戻す
+                        strMatchedValue = arrMatches[2].replace(/\"\"/g, "\"");
+                    } else {
+                        // 引用符で囲まれていない値
                         strMatchedValue = arrMatches[3];
                     }
+
+                    // 最初の行が存在しない場合、新しい行を追加
+                    if (arrData.length === 0) {
+                        arrData.push([]);
+                    }
+
+                    // 現在の行に値を追加
                     arrData[arrData.length - 1].push(strMatchedValue);
                 }
+
                 return arrData;
             }
             function processLoadedCSV(csvData){
