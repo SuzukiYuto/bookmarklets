@@ -88,7 +88,7 @@
                     var cv=row.insertCell();
                     cv.appendChild(w.document.createTextNode(v||''));
                     if(i>0&&data.v[0]!=undefined&&v!=undefined&&data.v[0]!==v){
-                        cv.style.backgroundColor='red';
+                        cv.style.backgroundColor='gold';
                     }
                 });
             }
