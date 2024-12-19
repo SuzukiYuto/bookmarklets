@@ -12,6 +12,10 @@
         alert('classが"GMSection"のテーブルが見つかりませんでした。');
         return;
     }
+        var wrapper = document.querySelector('#header_tab_wrapper');
+　　var paragraphs = wrapper.querySelectorAll('p');
+　　var innerTexts = Array.from(paragraphs).map(p => p.innerText);
+　　
     var h2 = document.querySelector('.column_one.layout h2'),
         h2T = h2 ? h2.textContent.trim() : '',
         w = window.open('', '_blank');
@@ -78,8 +82,8 @@
                     // "Item Number"以降のセルをheadersに格納
                     headers = cells.slice(itemNumberIndex).map(function(cell){
                         var headerLabel = '';
-                        // cell内の<span>または<img>を探す
-                        var headerElement = cell.querySelector('span[title], img[title]');
+                        // cell内の<span>タグのみを探す
+                        var headerElement = cell.querySelector('span[title]');
                         if(headerElement){
                             headerLabel = headerElement.getAttribute('title').trim();
                         } else {
@@ -97,9 +101,9 @@
         }
     }
 
-    // "Item Number"を含むヘッダーがない場合は処理を終了
+    // "Item Number"を含むヘッダーがない場合は、headersのすべての文字列を表示
     if(headers.indexOf('IN') === -1){
-        alert('"Item Number"を含むヘッダーが見つかりませんでした。');
+        alert('ヘッダーに"Item Number"が見つかりませんでした。\n取得したヘッダー一覧:\n' + headers.join(', '));
         return;
     }
 
@@ -180,10 +184,76 @@
         SP[rowNum].data[headerLabel] = cellValue;
     });
 
-    // HTMLテーブルを作成
-    var htmlContent = '<!DOCTYPE html><html><head><title>データテーブル</title></head><body>';
+     // HTMLテーブルを作成
+    const getFormattedDate = (date) => {
+  　return date.toLocaleDateString('ja-JP', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  　　});
+　　};
+
+
+   function chk(ItemNumber, headerLabel, reportlabel) {
+    var itemNumbers = ItemNumber.split(';');
+    var headerLabels = headerLabel.split(';');
+    var results = [];
+
+    for(var i = 0; i < itemNumbers.length; i++) {
+        var iNumber = itemNumbers[i];
+        var valuesPerHeaderLabel = [];
+        for(var j = 0; j < headerLabels.length; j++) {
+            var hLabel = headerLabels[j];
+            var values = [];
+            for(var k = 0; k < csvData.length; k++) {
+                var row = csvData[k];
+                if(row[2] === iNumber && row[3] === hLabel) {
+                    values.push(row[4]);
+                }
+            }
+            if(values.length === 0) {
+                values.push('not found');
+            }
+            // 各 headerLabel の値を '<br>' で連結
+            var valueStr = values.join('<br>');
+            valuesPerHeaderLabel.push(valueStr);
+        }
+        // headerLabel が複数の場合は ' - ' で連結
+        var combinedValue = headerLabels.length > 1 ? valuesPerHeaderLabel.join(' - ') : valuesPerHeaderLabel.join('');
+        results.push(combinedValue);
+    }
+
+    // ItemNumber が複数の場合は ', ' で連結
+    var resultStr = itemNumbers.length > 1 ? results.join(', ') : results.join('');
+    return reportlabel + ': ' + resultStr;
+}
+
+    // html header作成
+    const date = new Date();
+
+    var htmlContent = '<!DOCTYPE html><html><head><title>' + h2T + '</title>';
+    htmlContent += '<style>.aaa {background-color: #4d9bc1;color: #fff;padding: 0 0.1em;} .bbb {background-color: #4d1bc1;color: #fff;padding: 0 0.1em;}</style></head><body>';
+    htmlContent += '<b>AB整形結果：</b><br>Output Date: ' + getFormattedDate(date) + '<br>';
+    htmlContent += innerTexts ;
+    
+    htmlContent += "<P><b>概要</b>(" + h2T + ")<br>"; 
+    
+     htmlContent += chk('AG0000002261', 'SV', '官能') + "<br>";
+     htmlContent += chk('AG0000001114;AG0000001117', 'SV', '外観') + "<br>";
+     htmlContent += chk('AG0000002265', 'SV', '外観(日)') + "<br>";
+      htmlContent += chk('AG0000001251', 'LL;UL', '比重20℃') + "<br>";
+       htmlContent += chk('AG0000001260', 'LL;UL', '屈折20℃') + "<br>";
+     htmlContent += chk('AG0000001321', 'LL;UL', '重金属') + chk('AG0000001321', 'USN', '') + "<br>";
+    htmlContent += chk('AG0000002301', 'LL;UL', 'ヒ素') + chk('AG0000002301', 'USN', '') +  "<br>";
+    htmlContent += "GB: (未実装、手動確認ください)" + "<br>";
+    htmlContent += "それ以外: (実装予定)" + "<br></P>";
+   
+    htmlContent += "<hr><b>詳細</b><br>"; 
+    
+    //table
+    
     htmlContent += '<table border="1" cellpadding="5" cellspacing="0">';
-    htmlContent += '<tr><th></th><th>' + h2T + '</th><th>Comment</th></tr>';
+    htmlContent += '<tr><th></th><th>' + h2T + '</th><th>Value</th><th>Comment etc.</th></tr>';
 
     // SPを用いてデータを表示
     Object.keys(SP).forEach(function(rowNum){
@@ -193,26 +263,29 @@
         var bgColor = 'white';
 
         // data['IN']の値によって背景色を変更
-        if (data['IN']) {
-            if (data['QAT'] && data['QAT'].startsWith('In')) {
-                bgColor = 'lightblue';
-            } else if (data['QAT'] && data['QAT'].startsWith('St')) {
-                bgColor = 'lightgreen';
+        if (data['QAT']) {
+            if (data['QAT'].startsWith('In')) {
+                style_str = 'aaa';
+            } else if (data['QAT'].startsWith('St')) {
+                style_str = 'bbb';
             }
             // 他の条件も追加可能
         }
 
         htmlContent += '<tr><td>' + rowNum + '</TD><TD>';
         htmlContent += (data['IN'] || '') + '</TD><TD>';
-        htmlContent += '[<font color=' + bgColor +'>' + (data['QAT'] || '') + '</font>] ' + (data['DJ'] || '') + '</br>';
-        htmlContent += (data['LL'] || '') + ' - ' + (data['UL'] || '')  + ' ' + (data['USN'] || '') + ', ';
+        htmlContent += '[<span class=' + style_str +'>' + (data['QAT'] || '') + '</span>] <b>' + (data['DJ'] || '') + '</b></br>';
+        htmlContent += (data['ETR'] || '') + ' | ' +(data['LL'] || '') + ' - ' + (data['UL'] || '')  + ' (' + (data['EDADP'] || '') + ')' + (data['USN'] || '') + ', ';
         htmlContent += (data['SV'] || '') + '<br>';        
-        htmlContent += (data['TFV'] || '') + ' | ' + (data['TC2'] || '') + '<br>';      
+        htmlContent += (data['TF'] || '') + ' | '; 
+        htmlContent += (data['QAT'] || '') + ' | '; 
+        htmlContent += (data['GVS'] || '') + ' | '; 
+        htmlContent += (data['TC2'] || '') + '<br>';      
         htmlContent += '</td><td>' + (data['CM'] || '') + '</td>';
         htmlContent += '</tr>';
     });
 
-    htmlContent += '</table>';
+    htmlContent += '</table><p></p>';
     htmlContent += csvContent
     htmlContent += '</body></html>';
 
