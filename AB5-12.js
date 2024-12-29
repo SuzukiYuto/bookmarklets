@@ -7,11 +7,41 @@
         }
         return false;
     }
+    var s=document.querySelector('select[name="revSelectName"]');
+    if(s){
+        var so=s.options[s.selectedIndex];
+        var revtext=so.innerText.trim();
+    }
+    
     var t = Array.from(document.querySelectorAll('table.GMSection')).filter(function(t){ return !h(t) });
     if(t.length === 0){
         alert('ABのBOMを開いてから選択してください。');
         return;
     }
+
+    var titleElement = document.querySelector('title');
+    if (titleElement) {
+        var titleText = titleElement.textContent;
+        var nameMatch = titleText.match(/\(([^)]+)\)/); // ()内の文字列を取得
+        if (nameMatch && nameMatch[1]) {
+            console.log("Name inside parentheses:", nameMatch[1]);
+        } else {
+            console.log("No name found inside parentheses.");
+        }
+    }
+
+    var selectElement = document.querySelector('select[name="TABLE_VIEWS_LIST_3"]');
+if (selectElement) {
+    var selectedValue = selectElement.value; // 選択された値を取得
+    var selectedText = selectElement.options[selectElement.selectedIndex].text.trim(); // 選択されたテキストを取得
+
+    if (!selectedText.includes("Base View")) {
+        alert("Warning: Views is selected to be " + selectedText + ", select 'Base View' and try again..");
+        return;
+    } else {
+        console.log("Selected value is 'Base View'.");
+    }
+}
         var wrapper = document.querySelector('#header_tab_wrapper');
 　　var paragraphs = wrapper.querySelectorAll('p');
 　　var innerTexts = Array.from(paragraphs).map(p => p.innerText);
@@ -38,6 +68,7 @@
         'Report frequency': 'RF',
         'Test frequency': 'TF',
         'Test condition 2': 'TC2',
+        'Target Specification': 'TS',
         'Criteria for acceptance': 'CA',
         'Entry type of result': 'ETR',
         'Specification for self recognizing': 'SSR',
@@ -227,19 +258,26 @@ console.log(htmlContent);
     const date = new Date();
 
     var htmlContent = '<!DOCTYPE html><html><head><title>' + h2T + '</title>';
-    htmlContent += '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">';
-    htmlContent += '<link rel="stylesheet" href="https://mottie.github.io/tablesorter/css/theme.default.css">';
+    
+    htmlContent += '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">'
+    htmlContent += '<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>'
     htmlContent += '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
     htmlContent += '<script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.min.js"></script>';
-    htmlContent += '</head><body>';
-    htmlContent += '<div class="container mt-4">';
-    htmlContent += '<h1>AB整形結果</h1>';
-    htmlContent += '<p><b>出力日時:</b> ' + date.toLocaleString() + '</p>';
+    htmlContent += '<style> .container {max-width: 100% !important;}</style></head><body>';
+    htmlContent += '<div class="container lg">';
+    htmlContent += '<h1>' + h2T + '</h1>';
+    htmlContent += '<p><b>出力日時:</b> ' + date.toLocaleString() + '<br>';
+    htmlContent += '<b>Title:</b> ' + innerTexts + '<br>';
+    htmlContent += '<b>Rev.:</b> ' + revtext; 
+    htmlContent += '&nbsp;&nbsp;&nbsp;&nbsp;<b>Operator: </b>' + nameMatch[1] + '</p></><hr style="width: 100%; border: 1px solid #ccc;">';
 
 
 // 指定されたIN値に対応するデータを返す関数
 function getDataByIN(targetValue, labels) {
     var result = [];
+
+    // targetValueをカンマで分割して配列に変換
+    var targetValues = targetValue.split(',');
 
     // labelsが単一の文字列の場合、配列に変換
     if (!Array.isArray(labels)) {
@@ -249,7 +287,10 @@ function getDataByIN(targetValue, labels) {
     Object.keys(SP).forEach(function(rowNum) {
         var data = SP[rowNum].data;
 
-        if (data['IN'] === targetValue) {
+        // targetValuesの中から最初に一致する値を探す
+        var matchingValue = targetValues.find(tv => data['IN'] === tv);
+
+        if (matchingValue) {
             var rowContent = labels.map(label => {
                 // ラベルが存在しない場合や値がnullまたは空文字列の場合は<N/A>
                 return (data.hasOwnProperty(label) && data[label] && data[label].trim().length > 0)
@@ -268,15 +309,38 @@ function getDataByIN(targetValue, labels) {
 // 使用例: data['IN']が特定の値('targetValue')の場合のデータを取得
 var matchingData = getDataByIN('AG0000002261','SV');
 
-htmlContent += "<p><b>概要</b>(" + h2T + ")<br>";
-htmlContent += "<table border='1' cellpadding='5px' style='border-collapse: collapse;'>";
-htmlContent += "<tr><th>項目</th><th>QAT</th><th>CA</th><th>頻度</th><th>ETR</th>";
-htmlContent += "<th>GVS</th><th>範囲</th><th>幅</th><th>単位</th><th>CM</th><th>TC2</th><th>判定</th></tr>";
+htmlContent += "<p><b>概要</b>(" + h2T + ")<br><div class='container-fluid'>";
+htmlContent += "<table class='table table-bordered table-striped w-100'>";
 
-var ids=['AG0000002261','AG0000001114','AG0000001117','AG0000002265','AG0000001251','AG0000001260','AG0000001321','AG0000002301']
+// ヘッダー配列
+var headers = [
+    "項目", "QAT", "TS", "CA", "頻度", "ETR", 
+    "GVS", "範囲", "幅", "単位", "CM", "TC2", "Item Num", "判定"
+];
+
+// ヘルプ配列（各ヘッダーに対応）
+var helpTexts = [
+    "項目の説明", "品質保証タイプ", "テスト条件", "受け入れ基準", "頻度の説明", "結果入力の種類",
+    "保証値", "許容範囲", "幅の説明", "単位の説明", "コメント", "テスト条件2", "アイテム番号", "判定条件"
+];
+
+// HTML生成
+htmlContent += "<tr>";
+    headers.forEach((header, index) => {
+        var helpText = helpTexts[index] || "";
+        htmlContent += `<th data-toggle="tooltip" data-placement="top" title="${helpText}">${header}</th>`;
+    });
+    htmlContent += "</tr>";
+
+var ids=['AG0000002261,AG0000002447','AG0000001114','AG0000001117','AG0000002265','AG0000001251','AG0000001260','AG0000001321','AG0000002301']
 var titles=['官能','外観','色調','外観(日)','比重_20/20','屈折率_20℃','重金属（食添）','ヒ素(食添法)']
 for(var i = 0; i < ids.length; i++) {
-htmlContent += '<TR><TD>' + titles[i] + '<TD>' + getDataByIN(ids[i],'QAT').split(' ')[0] + '</TD>';
+
+htmlContent += '<TR><TD>' + titles[i] + '</TD>';
+if (getDataByIN(ids[i],'IN').length < 3){htmlContent += '<TD colspan=11></td><td>'  + ids[i] + '</td>';} 
+else { 
+htmlContent += '<TD>' + getDataByIN(ids[i],'QAT').split(' ')[0] + '</TD>';
+htmlContent += '<TD>' + getDataByIN(ids[i],'TS') + '</TD>';
 htmlContent += '<TD>' + getDataByIN(ids[i],'CA') + '</td>';
 htmlContent += '<TD>' + getDataByIN(ids[i],'TF') + '</td>';
 htmlContent += '<TD>' + getDataByIN(ids[i],'ETR') + '</td>';
@@ -293,19 +357,25 @@ if (getDataByIN(ids[i],'ETR').includes('Text')){
 htmlContent += '<TD>' + getDataByIN(ids[i],'USN') + '</TD>';
 htmlContent += '<TD>' + getDataByIN(ids[i],'CM') + '</TD>';
 htmlContent += '<TD>' + getDataByIN(ids[i],'TC2') + '</TD>';
+htmlContent += '<TD>' + getDataByIN(ids[i],'IN') + '</TD>';
+    }
 htmlContent += '<TD><input type="checkbox"></TD></TR>';
 }
 
-htmlContent +='</table>'
+htmlContent +='</table></div>'
 
 function getNonMatchingKeys(ids, label) { 
     var result = [];
 
+    // idsをカンマで分割して配列に変換
+    var idList = Array.isArray(ids) ? ids : ids.split(',');
+
     Object.keys(SP).forEach(function(rowNum) {
         var data = SP[rowNum].data;
 
-        // キーがids配列に含まれない場合のみ処理
-        if (!ids.includes(data['IN'])) {
+        // idListの中にdata['IN']が含まれていない場合のみ処理
+        var isMatching = idList.some(id => id === data['IN']);
+        if (!isMatching) {
             // 指定されたラベルに対応する値をチェック
             var value = data[label];
             if (value && value.trim().length > 0) {
@@ -329,14 +399,19 @@ function isEmpty(str) {
 
     return str.trim().length === 0;
   }
+// idsを延べた
+  var ids_temp=['AG0000002261','AG0000002447','AG0000001114','AG0000001117','AG0000002265','AG0000001251','AG0000001260','AG0000001321','AG0000002301']
 
-    htmlContent += '<p>上記以外の規格項目: ' + isEmpty(getNonMatchingKeys(ids,'DJ'));
+    htmlContent += '<p>上記以外の規格項目: ' + isEmpty(getNonMatchingKeys(ids_temp,'DJ'));
 
-    htmlContent += "</p><hr><b>詳細</b><br>"; 
+    htmlContent += "</p><hr style='width: 100%; border: 1px solid #ccc;'><b>詳細</b><br>"; 
     htmlContent += csvContent
     htmlContent += '<script>$(document).ready(function(){$("table.tablesorter").tablesorter();});</script>';
     htmlContent += '</div></body></html>';
 
     // 新しいウィンドウにHTMLテーブルを表示
     w.document.write(htmlContent);
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
 })();
