@@ -9,7 +9,7 @@
     }
     var t = Array.from(document.querySelectorAll('table.GMSection')).filter(function(t){ return !h(t) });
     if(t.length === 0){
-        alert('classが"GMSection"のテーブルが見つかりませんでした。');
+        alert('ABのBOMを開いてから選択してください。');
         return;
     }
         var wrapper = document.querySelector('#header_tab_wrapper');
@@ -148,19 +148,49 @@
             }
         }
     }
-     // CSV文字列を作成
-    var csvContent = '<u>h2T,RowNum,Item Number,Label,value</u><br>\n';
-    csvData.forEach(function(rowArray){
-        var row = rowArray.map(function(field){
-            var value = ('' + field).replace(/"/g, '""');
-            if(value.search(/("|,|\n)/g) >= 0){
-                value = '"' + value + '"';
-            }
-            return value;
-        }).join(',');
-        csvContent += row + '<br>\n';
+
+// 略語→正式名称のマッピングを作成
+var abbreviationToHeader = Object.fromEntries(
+    Object.entries(headerAbbreviations).map(([key, value]) => [value, key])
+);
+
+// 略語を元の名前に逆変換する関数
+function getOriginalHeader(abbreviation) {
+    return abbreviationToHeader[abbreviation] || abbreviation; // 略語が見つからない場合はそのまま返す
+}
+
+// HTMLテーブル生成
+var csvContent = '<table border="1" cellpadding=5 style="border-collapse: collapse;">';
+csvContent += '<thead><tr><th>AB number</th><th>RowNum</th><th>Item Number</th><th>Label</th><th>Full Name</th><th>Value</th></tr></thead>';
+csvContent += '<tbody>';
+
+csvData.forEach(function(rowArray) {
+    var rowHtml = '';
+    var fullName = '';
+
+    rowArray.forEach(function(field, index) {
+        // エスケープ処理
+        var value = ('' + field).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+        // 4番目（Label列）の次に正式名称列を追加
+        if (index === 3) { // Label列に対応
+            fullName = getOriginalHeader(value); // 略語を正式名称に変換
+            rowHtml += `<td>${value}</td><td>${fullName}</td>`; // Labelと正式名称
+        } else {
+            rowHtml += `<td>${value}</td>`;
+        }
     });
-    
+
+    csvContent += `<tr>${rowHtml}</tr>`;
+});
+
+csvContent += '</tbody></table>';
+
+// 結果を出力
+console.log(htmlContent);
+
+     
+
     // csvDataを行番号ごとに整理
     var SP = {};
     csvData.forEach(function(row){
@@ -186,108 +216,126 @@
 
      // HTMLテーブルを作成
     const getFormattedDate = (date) => {
-  　return date.toLocaleDateString('ja-JP', {
+    return date.toLocaleDateString('ja-JP', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-  　　});
-　　};
-
-
-   function chk(ItemNumber, headerLabel, reportlabel) {
-    var itemNumbers = ItemNumber.split(';');
-    var headerLabels = headerLabel.split(';');
-    var results = [];
-
-    for(var i = 0; i < itemNumbers.length; i++) {
-        var iNumber = itemNumbers[i];
-        var valuesPerHeaderLabel = [];
-        for(var j = 0; j < headerLabels.length; j++) {
-            var hLabel = headerLabels[j];
-            var values = [];
-            for(var k = 0; k < csvData.length; k++) {
-                var row = csvData[k];
-                if(row[2] === iNumber && row[3] === hLabel) {
-                    values.push(row[4]);
-                }
-            }
-            if(values.length === 0) {
-                values.push('not found');
-            }
-            // 各 headerLabel の値を '<br>' で連結
-            var valueStr = values.join('<br>');
-            valuesPerHeaderLabel.push(valueStr);
-        }
-        // headerLabel が複数の場合は ' - ' で連結
-        var combinedValue = headerLabels.length > 1 ? valuesPerHeaderLabel.join(' - ') : valuesPerHeaderLabel.join('');
-        results.push(combinedValue);
-    }
-
-    // ItemNumber が複数の場合は ', ' で連結
-    var resultStr = itemNumbers.length > 1 ? results.join(', ') : results.join('');
-    return reportlabel + ': ' + resultStr;
-}
+    });
+    };
 
     // html header作成
     const date = new Date();
 
     var htmlContent = '<!DOCTYPE html><html><head><title>' + h2T + '</title>';
-    htmlContent += '<style>.aaa {background-color: #4d9bc1;color: #fff;padding: 0 0.1em;} .bbb {background-color: #4d1bc1;color: #fff;padding: 0 0.1em;}</style></head><body>';
-    htmlContent += '<b>AB整形結果：</b><br>Output Date: ' + getFormattedDate(date) + '<br>';
-    htmlContent += innerTexts ;
-    
-    htmlContent += "<P><b>概要</b>(" + h2T + ")<br>"; 
-    
-     htmlContent += chk('AG0000002261', 'SV', '官能') + "<br>";
-     htmlContent += chk('AG0000001114;AG0000001117', 'SV', '外観') + "<br>";
-     htmlContent += chk('AG0000002265', 'SV', '外観(日)') + "<br>";
-      htmlContent += chk('AG0000001251', 'LL;UL', '比重20℃') + "<br>";
-       htmlContent += chk('AG0000001260', 'LL;UL', '屈折20℃') + "<br>";
-     htmlContent += chk('AG0000001321', 'LL;UL', '重金属') + chk('AG0000001321', 'USN', '') + "<br>";
-    htmlContent += chk('AG0000002301', 'LL;UL', 'ヒ素') + chk('AG0000002301', 'USN', '') +  "<br>";
-    htmlContent += "GB: (未実装、手動確認ください)" + "<br>";
-    htmlContent += "それ以外: (実装予定)" + "<br></P>";
-   
-    htmlContent += "<hr><b>詳細</b><br>"; 
-    
-    //table
-    
-    htmlContent += '<table border="1" cellpadding="5" cellspacing="0">';
-    htmlContent += '<tr><th></th><th>' + h2T + '</th><th>Value</th><th>Comment etc.</th></tr>';
+    htmlContent += '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">';
+    htmlContent += '<link rel="stylesheet" href="https://mottie.github.io/tablesorter/css/theme.default.css">';
+    htmlContent += '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
+    htmlContent += '<script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.min.js"></script>';
+    htmlContent += '</head><body>';
+    htmlContent += '<div class="container mt-4">';
+    htmlContent += '<h1>AB整形結果</h1>';
+    htmlContent += '<p><b>出力日時:</b> ' + date.toLocaleString() + '</p>';
 
-    // SPを用いてデータを表示
-    Object.keys(SP).forEach(function(rowNum){
+
+// 指定されたIN値に対応するデータを返す関数
+function getDataByIN(targetValue, labels) {
+    var result = [];
+
+    // labelsが単一の文字列の場合、配列に変換
+    if (!Array.isArray(labels)) {
+        labels = [labels];
+    }
+
+    Object.keys(SP).forEach(function(rowNum) {
         var data = SP[rowNum].data;
 
-        // デフォルトの背景色を設定
-        var bgColor = 'white';
+        if (data['IN'] === targetValue) {
+            var rowContent = labels.map(label => {
+                // ラベルが存在しない場合や値がnullまたは空文字列の場合は<N/A>
+                return (data.hasOwnProperty(label) && data[label] && data[label].trim().length > 0)
+                    ? data[label]
+                    : '-';
+            }).join(' | ');
 
-        // data['IN']の値によって背景色を変更
-        if (data['QAT']) {
-            if (data['QAT'].startsWith('In')) {
-                style_str = 'aaa';
-            } else if (data['QAT'].startsWith('St')) {
-                style_str = 'bbb';
-            }
-            // 他の条件も追加可能
+            result.push(rowContent);
         }
-
-        htmlContent += '<tr><td>' + rowNum + '</TD><TD>';
-        htmlContent += (data['IN'] || '') + '</TD><TD>';
-        htmlContent += '[<span class=' + style_str +'>' + (data['QAT'] || '') + '</span>] <b>' + (data['DJ'] || '') + '</b></br>';
-        htmlContent += (data['ETR'] || '') + ' | ' +(data['LL'] || '') + ' - ' + (data['UL'] || '')  + ' (' + (data['EDADP'] || '') + ')' + (data['USN'] || '') + ', ';
-        htmlContent += (data['SV'] || '') + '<br>';        
-        htmlContent += (data['TF'] || '') + ' | '; 
-        htmlContent += (data['QAT'] || '') + ' | '; 
-        htmlContent += (data['GVS'] || '') + ' | '; 
-        htmlContent += (data['TC2'] || '') + '<br>';      
-        htmlContent += '</td><td>' + (data['CM'] || '') + '</td>';
-        htmlContent += '</tr>';
     });
 
-    htmlContent += '</table><p></p>';
+    // <br>で改行された文字列として返す
+    return isEmpty(result.join('<br>'));
+}
+
+// 使用例: data['IN']が特定の値('targetValue')の場合のデータを取得
+var matchingData = getDataByIN('AG0000002261','SV');
+
+htmlContent += "<p><b>概要</b>(" + h2T + ")<br>";
+htmlContent += "<table border='1' cellpadding='5px' style='border-collapse: collapse;'>";
+htmlContent += "<tr><th>項目</th><th>QAT</th><th>CA</th><th>頻度</th><th>ETR</th>";
+htmlContent += "<th>GVS</th><th>範囲</th><th>幅</th><th>単位</th><th>CM</th><th>TC2</th><th>判定</th></tr>";
+
+var ids=['AG0000002261','AG0000001114','AG0000001117','AG0000002265','AG0000001251','AG0000001260','AG0000001321','AG0000002301']
+var titles=['官能','外観','色調','外観(日)','比重_20/20','屈折率_20℃','重金属（食添）','ヒ素(食添法)']
+for(var i = 0; i < ids.length; i++) {
+htmlContent += '<TR><TD>' + titles[i] + '<TD>' + getDataByIN(ids[i],'QAT').split(' ')[0] + '</TD>';
+htmlContent += '<TD>' + getDataByIN(ids[i],'CA') + '</td>';
+htmlContent += '<TD>' + getDataByIN(ids[i],'TF') + '</td>';
+htmlContent += '<TD>' + getDataByIN(ids[i],'ETR') + '</td>';
+htmlContent += '<TD>' + getDataByIN(ids[i],'GVS') + '</td>';
+
+
+if (getDataByIN(ids[i],'ETR').includes('Text')){
+    htmlContent += '<TD>' + getDataByIN(ids[i],'SV') + '</TD><TD>-</TD>';
+}else{
+       htmlContent += '<TD>' + getDataByIN(ids[i],'LL') + ' - ' + getDataByIN(ids[i],'UL');
+       htmlContent += ' (有効：' + getDataByIN(ids[i],'EDADP') + '桁) ' + '</TD>';
+       htmlContent += '<TD>' + parseInt((parseFloat(getDataByIN(ids[i],'UL')) - parseFloat(getDataByIN(ids[i],'LL')))*1000)/1000+ '</TD>';
+}
+htmlContent += '<TD>' + getDataByIN(ids[i],'USN') + '</TD>';
+htmlContent += '<TD>' + getDataByIN(ids[i],'CM') + '</TD>';
+htmlContent += '<TD>' + getDataByIN(ids[i],'TC2') + '</TD>';
+htmlContent += '<TD><input type="checkbox"></TD></TR>';
+}
+
+htmlContent +='</table>'
+
+function getNonMatchingKeys(ids, label) { 
+    var result = [];
+
+    Object.keys(SP).forEach(function(rowNum) {
+        var data = SP[rowNum].data;
+
+        // キーがids配列に含まれない場合のみ処理
+        if (!ids.includes(data['IN'])) {
+            // 指定されたラベルに対応する値をチェック
+            var value = data[label];
+            if (value && value.trim().length > 0) {
+                // 値が存在する場合のみ結果に追加
+                result.push(value + ' (' + data['IN'] + ')');
+            } else {
+                // 値が存在しない場合は<N/A>で追加
+                result.push(`${rowNum}: <N/A>`);
+            }
+        }
+    });
+
+    return result.join('<br>');
+}
+// 必要に応じて該当データを表示
+    
+function isEmpty(str) {
+    if (str == null || typeof str === "undefined") {
+      return 'なし';
+    } else if(str.length===0){return 'なし';}else{return str;}
+
+    return str.trim().length === 0;
+  }
+
+    htmlContent += '<p>上記以外の規格項目: ' + isEmpty(getNonMatchingKeys(ids,'DJ'));
+
+    htmlContent += "</p><hr><b>詳細</b><br>"; 
     htmlContent += csvContent
-    htmlContent += '</body></html>';
+    htmlContent += '<script>$(document).ready(function(){$("table.tablesorter").tablesorter();});</script>';
+    htmlContent += '</div></body></html>';
 
     // 新しいウィンドウにHTMLテーブルを表示
     w.document.write(htmlContent);
