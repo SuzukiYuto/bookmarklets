@@ -119,7 +119,7 @@
                 csv+=row.map(function(f){return '"'+f+'"';}).join(',')+'\n';
             }
             var now=new Date(),ymd=[now.getFullYear().toString().slice(-2),(now.getMonth()+1).toString().padStart(2,'0'),now.getDate().toString().padStart(2,'0')].join(''),hms=[now.getHours().toString().padStart(2,'0'),now.getMinutes().toString().padStart(2,'0'),now.getSeconds().toString().padStart(2,'0')].join('');
-            var filename=title+ymd+hms+'.csv';
+            var filename=title + '_' + ymd + '_' + hms+'.csv';
             var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),link=w.document.createElement('a');
             link.href=URL.createObjectURL(blob);
             link.download=filename;
