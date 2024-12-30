@@ -1,122 +1,45 @@
-(function(){
-    function h(e){
-        while(e.parentElement){
-            e = e.parentElement;
-            if(e.tagName.toLowerCase() === 'div' && e.classList.contains('GMChiled'))
-                return true;
+javascript:(function(){
+    // 最初の要素からマッチングする文字列を取得
+    var element1 = document.querySelector('.column_one.layout h2');
+    var match = null;
+    if (element1) {
+        var text1 = element1.textContent.trim();
+        match = text1.match(/[A-Z]{2}\d{10}/); // アルファベット2文字＋数字10文字にマッチ
+        if (match) {
+            console.log('Match found: ' + match[0]);
         }
-        return false;
     }
-    var t = Array.from(document.querySelectorAll('table.GMSection')).filter(function(t){ return !h(t) });
-    if(t.length === 0){
-        alert('classが"GMSection"のテーブルが見つかりませんでした。');
-        return;
+
+    // selectedTab の文字列を取得
+    var element2 = document.querySelector('#selectedTab a');
+    var text2 = null;
+    if (element2) {
+        text2 = element2.textContent.trim();
+        console.log('Selected tab: ' + text2);
     }
-    var h2 = document.querySelector('.column_one.layout h2'),
-        h2T = h2 ? h2.textContent.trim() : '',
-        w = window.open('', '_blank');
-    var csvData = [];
-    var rowNumber = 0;
 
-    t.forEach(function(table, tableIndex){
-        var rows = Array.from(table.rows);
-        var headers = [];
-        // ヘッダー行を特定し、ヘッダー情報を取得
-        for(var i = 0; i < rows.length; i++){
-            var row = rows[i];
-            var cells = Array.from(row.cells);
-            var isHeader = row.classList.contains('GMHeaderRow') || cells.some(function(cell){ return cell.classList.contains('GMCellHeader') });
-            if(isHeader){
-                // "Item Number"があるか評価
-                var itemNumberIndex = -1;
-                for(var j = 0; j < cells.length; j++){
-                    var cellText = cells[j].textContent.trim();
-                    if(cellText === 'Item Number'){
-                        itemNumberIndex = j;
-                        break;
-                    }
-                }
-                if(itemNumberIndex !== -1){
-                    // "Item Number"以降のセルをheadersに格納
-                    headers = cells.slice(itemNumberIndex).map(function(cell){
-                        var headerLabel = '';
-                        // cell内の<span>または<img>を探す
-                        var headerElement = cell.querySelector('span[title], img[title]');
-                        if(headerElement){
-                            headerLabel = headerElement.getAttribute('title').trim();
-                        } else {
-                            headerLabel = cell.textContent.trim();
-                        }
-                        return headerLabel;
-                    });
-                    break; // ヘッダー行は一つだけと仮定
-                }
-            }
-        }
-        // ヘッダー情報をCSVに追加
-        if(headers.length > 0){
-            var headerRow = ['ヘッダー情報', '', '', '', '']; // ヘッダー情報の識別子として'ヘッダー情報'を追加
-            headers.forEach(function(header){
-                headerRow.push(header);
-            });
-            csvData.push(headerRow);
-        }
-        // データ行の処理
-        for(var i = 0; i < rows.length; i++){
-            var row = rows[i];
-            var cells = Array.from(row.cells);
-            var isHeader = cells.some(function(cell){ return cell.tagName.toLowerCase() === 'th' || cell.classList.contains('GMCellHeader') });
-            if(isHeader){
-                continue; // ヘッダー行はスキップ
-            }
-            var itemNumber = '';
-            var startIndex = -1;
-            // 行内で"AG"を含むセルを探す
-            for(var j = 0; j < cells.length; j++){
-                var cellValue = cells[j].textContent.trim();
-                if(cellValue.includes('AG')){
-                    itemNumber = cellValue;
-                    startIndex = j;
-                    break;
-                }
-            }
-            if(startIndex === -1){
-                // "AG"を含むセルが見つからなかった場合、次の行へ
-                continue;
-            }
-            // データ行の処理
-            rowNumber++;
-            var headerIndex = 0; // ヘッダーのインデックスを初期化
-            for(var j = startIndex; j < cells.length; j++, headerIndex++){
-                var cell = cells[j];
-                var cellValue = cell.value !== undefined ? cell.value.trim() : cell.textContent.trim();
-                if(cellValue === ''){
-                    continue; // セルの値がない場合は無視
-                }
-                var headerLabel = headers[headerIndex] || ''; // 対応するヘッダーを取得
-                var csvRow = [h2T, rowNumber, itemNumber, headerLabel, cellValue];
-                csvData.push(csvRow);
-            }
-        }
-    });
-
-    // CSV文字列を作成
-    var csvContent = 'h2T,行番号,Item Number,ラベル,セルの値\n';
-    csvData.forEach(function(rowArray){
-        var row = rowArray.map(function(field){
-            var value = ('' + field).replace(/"/g, '""');
-            if(value.search(/("|,|\n)/g) >= 0){
-                value = '"' + value + '"';
-            }
-            return value;
-        }).join(',');
-        csvContent += row + '\n';
-    });
-    // 新しいウィンドウにCSVデータを表示
-    w.document.write('<!DOCTYPE html><html><head><title>CSVデータ</title></head><body>');
-    w.document.write('<pre>' + csvContent + '</pre>');
-    // CSVファイルをダウンロードできるリンクを追加
-    var encodedUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
-    w.document.write('<a href="'+ encodedUri +'" download="data.csv">CSVファイルをダウンロード</a>');
-    w.document.write('</body></html>');
+    // 条件に応じた処理
+    if (match && text2 === 'BOM') {
+        var prefix = match[0].substring(0, 2); // 最初の2文字を取得
+        if (prefix === 'AB') {
+            // test1.js を読み込む
+            var script = document.createElement('script');
+            script.src = 'https://suzukiyuto.github.io/bookmarklets/AB5-12.js';
+            document.body.appendChild(script);
+        } else if (prefix === 'CH') {
+            // アラートを表示して終了
+            alert('その操作は対応していません');
+            return;
+        } 
+    } else if (text2 === 'Title Block') {
+        // test2.js を読み込む
+        var script = document.createElement('script');
+        script.src = 'https://suzukiyuto.github.io/bookmarklets/Dataget.js';
+        document.body.appendChild(script);
+    }else {
+        // test3.js を読み込む
+        var script = document.createElement('script');
+        script.src = 'https://suzukiyuto.github.io/bookmarklets/Tableget.js';
+        document.body.appendChild(script);
+    }
 })();
