@@ -30,7 +30,12 @@ javascript:(function(){
             // アラートを表示して終了
             alert('その操作は対応していません');
             return;
-        } 
+        }else {
+            // test3.js を読み込む
+            var script = document.createElement('script');
+            script.src = 'https://suzukiyuto.github.io/bookmarklets/Tableget.js';
+            document.body.appendChild(script);
+        }
     } else if (text2 === 'Title Block') {
         // test2.js を読み込む
         var script = document.createElement('script');
