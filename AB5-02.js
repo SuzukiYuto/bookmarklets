@@ -1,136 +1,90 @@
-(function(){
-    function h(e){
-        while(e.parentElement){
-            e = e.parentElement;
-            if(e.tagName.toLowerCase() === 'div' && e.classList.contains('GMChiled'))
-                return true;
-        }
-        return false;
-    }
-    var t = Array.from(document.querySelectorAll('table.GMSection')).filter(function(t){ return !h(t) });
-    if(t.length === 0){
-        alert('classが"GMSection"のテーブルが見つかりませんでした。');
-        return;
-    }
-    var h2 = document.querySelector('.column_one.layout h2'),
-        h2T = h2 ? h2.textContent.trim() : '',
-        w = window.open('', '_blank');
-    var csvData = [];
-    var rowNumber = 0;
-    var headers = []; // 初期化を一度だけ行う
+javascript:(function(){
+    const searchStrings = ["AN0000002653","AN0000003585","AN0000003608","AN0000003609","AN0000206778","AN0000000725","AN0000209707","AN0000000621","AN0000000997","AN0000001655","AN0000003782","AN0000003097","AN0000000649","AN0000000062","AN0000293329","AN0000003329","AN0000209110","AN0000218695","AN0000237804","AN0000237822","AN0000001083","AN0000002496","AN0000003496","AN0000003585","AN0000130849","AN0000209707","AN0000223956","AN0000228014","AN0000230154","AN0000252530","AN0000295029","AN0000003551","AN0000000384","AN0000002522","AN0000003458","AN0000003460","AN0000209110","AN0000215311","AN0000002444","AN0000000044","AN0000000259","AN0000003113","AN0000287795","AN0000002044","AN0000279947","AN0000000809","AN0000000810","AN0000000811","AN0000001105","AN0000305235","AN0000294619","AN0000305243","AN0000300031","AN0000003329","AN0000002715","AN0000002803","AN0000130778","AN0000133185","AN0000208437","AN0000215738","AN0000279946","AN0000002374","AN0000000049","AN0000000050","AN0000003253","AN0000003254","AN0000003333","AN0000003554","AN0000002020","AN0000003344","AN0000001937","AN0000003551","AN0000275703","AN0000000384","AN0000235293","AN0000257131","AN0000000535","AN0000000197","AN0000000385","AN0000000429","AN0000000439","AN0000000533","AN0000000643","AN0000000673","AN0000000701","AN0000000733","AN0000001233","AN0000001406","AN0000001937","AN0000293466","AN0000288297","AN0000296957"]; // 配列で指定
+    let index = 0;
 
-    // ヘッダー行を特定し、ヘッダー情報を取得
-    for(var tableIndex = 0; tableIndex < t.length; tableIndex++){
-        var table = t[tableIndex];
-        var rows = Array.from(table.rows);
-        for(var i = 0; i < rows.length; i++){
-            var row = rows[i];
-            var cells = Array.from(row.cells);
-            var isHeader = row.classList.contains('GMHeaderRow') || cells.some(function(cell){ return cell.classList.contains('GMCellHeader') });
-            if(isHeader){
-                // "Item Number"があるか評価
-                var itemNumberIndex = -1;
-                for(var j = 0; j < cells.length; j++){
-                    var cellText = cells[j].textContent.trim();
-                    if(cellText === 'Item Number'){
-                        itemNumberIndex = j;
-                        break;
-                    }
-                }
-                if(itemNumberIndex !== -1){
-                    // "Item Number"以降のセルをheadersに格納
-                    headers = cells.slice(itemNumberIndex).map(function(cell){
-                        var headerLabel = '';
-                        // cell内の<span>または<img>を探す
-                        var headerElement = cell.querySelector('span[title], img[title]');
-                        if(headerElement){
-                            headerLabel = headerElement.getAttribute('title').trim();
+    function performSearch() {
+        if (index < searchStrings.length) {
+            document.getElementById("QUICKSEARCH_STRING").value = searchStrings[index];
+            doSimpleSearch();
+            setTimeout(() => clickBOM(false), 5000); // リトライフラグをfalseで初回実行
+        }
+    }
+
+    function clickBOM(retry) {
+        let bomLink = [...document.getElementsByTagName("a")].find(a => a.textContent.trim() === "BOM");
+        if (bomLink) {
+            bomLink.click();
+            setTimeout(clickDI, 1000);
+        } else if (!retry) { // 初回リトライの場合
+            let searchLink = [...document.getElementsByTagName("a")].find(a => a.textContent.trim().includes(searchStrings[index]));
+            if (searchLink) {
+                searchLink.click();
+                setTimeout(() => clickBOM(true), 300); // リトライフラグをtrueにして再試行
+            }
+        } else {
+            alert("BOMが見つかりませんでした: " + searchStrings[index]);
+            index++;
+            if (index < searchStrings.length) {
+                setTimeout(performSearch, 1000); // 次の検索を実行
+            }
+        }
+    }
+
+    function clickDI() {
+        let itemTable = document.getElementById("ITEMTABLE_BOM");
+        if (itemTable) {
+            let diLink = [...itemTable.getElementsByTagName("a")].find(a => /^DI/.test(a.textContent.trim()));
+            if (diLink) {
+                diLink.click();
+                setTimeout(clickTitleBlock, 1000);
+            } else {
+                let anLink = [...itemTable.getElementsByTagName("a")].find(a => /^AN/.test(a.textContent.trim()));
+                if (anLink) {
+                    anLink.click();
+                    setTimeout(() => {
+                        let bomLink = [...document.getElementsByTagName("a")].find(a => a.textContent.trim() === "BOM");
+                        if (bomLink) {
+                            bomLink.click();
+                            setTimeout(() => {
+                                diLink = [...itemTable.getElementsByTagName("a")].find(a => /^DI/.test(a.textContent.trim()));
+                                if (diLink) {
+                                    diLink.click();
+                                    setTimeout(clickTitleBlock, 1000);
+                                } else {
+                                    console.warn("DIが見つかりませんでした");
+                                }
+                            }, 1000);
                         } else {
-                            headerLabel = cell.textContent.trim();
+                            console.warn("BOMが見つかりませんでした");
                         }
-                        return headerLabel;
-                    });
-                    break; // ヘッダー行は一つだけと仮定
+                    }, 1000);
+                } else {
+                    console.warn("ANも見つかりませんでした");
                 }
             }
-        }
-        if(headers.length > 0){
-            break; // ヘッダーが見つかったらループを抜ける
-        }
-    }
-
-    // "Item Number"を含まない場合はCSV出力をスキップ
-    if(headers.indexOf('Item Number') === -1){
-        alert('"Item Number"を含むヘッダーが見つかりませんでした。');
-        return;
-    }
-
-    // ヘッダー情報をCSVに追加
-    var headerRow = ['ヘッダー情報', '', '', '', '']; // ヘッダー情報の識別子として'ヘッダー情報'を追加
-    headers.forEach(function(header){
-        headerRow.push(header);
-    });
-    csvData.push(headerRow);
-
-    // データ行の処理
-    for(var tableIndex = 0; tableIndex < t.length; tableIndex++){
-        var table = t[tableIndex];
-        var rows = Array.from(table.rows);
-        for(var i = 0; i < rows.length; i++){
-            var row = rows[i];
-            var cells = Array.from(row.cells);
-            var isHeader = cells.some(function(cell){ return cell.tagName.toLowerCase() === 'th' || cell.classList.contains('GMCellHeader') });
-            if(isHeader){
-                continue; // ヘッダー行はスキップ
-            }
-            var itemNumber = '';
-            var startIndex = -1;
-            // 行内で"AG"で始まるセルを探す
-            for(var j = 0; j < cells.length; j++){
-                var cellValue = cells[j].textContent.trim();
-                if(cellValue.startsWith('AG')){
-                    itemNumber = cellValue;
-                    startIndex = j;
-                    break;
-                }
-            }
-            if(startIndex === -1){
-                // "AG"で始まるセルが見つからなかった場合、次の行へ
-                continue;
-            }
-            // データ行の処理
-            rowNumber++;
-            var headerIndex = 0; // ヘッダーのインデックスを初期化
-            for(var j = startIndex; j < cells.length; j++, headerIndex++){
-                var cell = cells[j];
-                var cellValue = cell.value !== undefined ? cell.value.trim() : cell.textContent.trim();
-                if(cellValue === ''){
-                    continue; // セルの値がない場合は無視
-                }
-                var headerLabel = headers[headerIndex] || ''; // 対応するヘッダーを取得
-                var csvRow = [h2T, rowNumber, itemNumber, headerLabel, cellValue];
-                csvData.push(csvRow);
-            }
+        } else {
+            console.warn("ITEMTABLE_BOMが見つかりません");
         }
     }
 
-    // CSV文字列を作成
-    var csvContent = 'h2T,行番号,Item Number,ラベル,セルの値\n';
-    csvData.forEach(function(rowArray){
-        var row = rowArray.map(function(field){
-            var value = ('' + field).replace(/"/g, '""');
-            if(value.search(/("|,|\n)/g) >= 0){
-                value = '"' + value + '"';
-            }
-            return value;
-        }).join(',');
-        csvContent += row + '\n';
-    });
-    // 新しいウィンドウにCSVデータを表示
-    w.document.write('<!DOCTYPE html><html><head><title>CSVデータ</title></head><body>');
-    w.document.write('<pre>' + csvContent + '</pre>');
-    // CSVファイルをダウンロードできるリンクを追加
-    var encodedUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
-    w.document.write('<a href="'+ encodedUri +'" download="data.csv">CSVファイルをダウンロード</a>');
-    w.document.write('</body></html>');
+    function clickTitleBlock() {
+        let titleBlockLink = [...document.getElementsByTagName("a")].find(a => a.textContent.trim() === "Title Block");
+        if (titleBlockLink) {
+            titleBlockLink.click();
+            setTimeout(loadScript, 1000);
+        }
+    }
+
+    function loadScript() {
+        let script = document.createElement("script");
+        script.src = "https://suzukiyuto.github.io/bookmarklets/AB5-01.js";
+        document.body.appendChild(script);
+        index++;
+        if (index < searchStrings.length) {
+            const randomDelay = Math.floor(Math.random() * 9000) + 1000; // 1000msから10000msの間のランダム値
+            setTimeout(performSearch, randomDelay); // 次の検索を実行
+        }
+    }
+
+    performSearch();
 })();
