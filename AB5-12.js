@@ -265,11 +265,10 @@ console.log(htmlContent);
     htmlContent += '<script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.min.js"></script>';
     htmlContent += '<style> .container {max-width: 100% !important;}</style></head><body>';
     htmlContent += '<div class="container lg">';
-    htmlContent += '<h1>' + h2T + '</h1>';
-    htmlContent += '<p><b>出力日時:</b> ' + date.toLocaleString() + '<br>';
-    htmlContent += '<b>Title:</b> ' + innerTexts + '<br>';
-    htmlContent += '<b>Rev.:</b> ' + revtext; 
-    htmlContent += '&nbsp;&nbsp;&nbsp;&nbsp;<b>Operator: </b>' + nameMatch[1] + '</p></><hr style="width: 100%; border: 1px solid #ccc;">';
+    htmlContent += '<b>Rev.:</b> ' + revtext + ',&#009;';
+    htmlContent += '<b>Operator: </b>' + nameMatch[1] + ',&#009;';
+    htmlContent += '<b>出力日時:</b> ' + date.toLocaleString() + '&#009;';
+    htmlContent += '<hr style="width: 100%; border: 1px solid #ccc;">';
 
 
 // 指定されたIN値に対応するデータを返す関数
@@ -309,7 +308,9 @@ function getDataByIN(targetValue, labels) {
 // 使用例: data['IN']が特定の値('targetValue')の場合のデータを取得
 var matchingData = getDataByIN('AG0000002261','SV');
 
-htmlContent += "<p><b>概要</b>(" + h2T + ")<br><div class='container-fluid'>";
+htmlContent += "<p><H1>Specification</b> (" ;
+htmlContent += innerTexts.join(' ').split(" • ")[1].split("_")[0] +" > ";
+htmlContent += h2T + ")</h1><div class='container-fluid'>";
 htmlContent += "<table class='table table-bordered table-striped w-100'>";
 
 // ヘッダー配列
@@ -367,10 +368,15 @@ var ids_temp=['AG0000002261','AG0000002447','AG0000001114','AG0000001117','AG000
 
 htmlContent +=  isEmptytbl(getNonMatchingKeys(ids_temp,'DJ'));
 htmlContent +='</table></div>'
-htmlContent += "</p><hr style='width: 100%; border: 1px solid #ccc;'><b>詳細</b><br>"; 
-htmlContent += csvContent
-htmlContent += '<script>$(document).ready(function(){$("table.tablesorter").tablesorter();});</script>';
-htmlContent += '</div></body></html>';
+htmlContent += "</p><hr style='width: 100%; border: 1px solid #ccc;'>";
+htmlContent += "<button class='btn btn-primary btn-sm' onclick='toggleDetails()'>全データ表示/非表示</button><br>";
+htmlContent += "<div id='details-section' style='display:none;'>";
+htmlContent += csvContent;
+htmlContent += "</div>";
+htmlContent += "<script>$(document).ready(function(){$('table.tablesorter').tablesorter();});";
+htmlContent += "function toggleDetails() { var details = document.getElementById('details-section');";
+htmlContent += "details.style.display = (details.style.display === 'none') ? 'block' : 'none'; }</script>";
+htmlContent += "</div></body></html>";
 
 
 // 新しいウィンドウにHTMLテーブルを表示
@@ -433,7 +439,7 @@ function isEmpty(str) {
 }
 function isEmptytbl(str) {
     if (str == null || typeof str === "undefined" || str.length === 0) {
-        return '<TR><TD colspan=14>上記以外の規格項目 : なし</TD></TR>:';
+        return '<TR><TD colspan=14>上記以外の規格項目 :  なし</TD></TR>:';
     }
     return '<TR><td colspan=14></td></tr>'+str+'</TR>';
 }    
