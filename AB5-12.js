@@ -43,9 +43,9 @@ if (selectElement) {
     }
 }
         var wrapper = document.querySelector('#header_tab_wrapper');
-　　var paragraphs = wrapper.querySelectorAll('p');
-　　var innerTexts = Array.from(paragraphs).map(p => p.innerText);
-　　
+    var paragraphs = wrapper.querySelectorAll('p');
+    var innerTexts = Array.from(paragraphs).map(p => p.innerText);
+    
     var h2 = document.querySelector('.column_one.layout h2'),
         h2T = h2 ? h2.textContent.trim() : '',
         w = window.open('', '_blank');
@@ -337,7 +337,7 @@ var titles=['官能','外観','色調','外観(日)','比重_20/20','屈折率_2
 for(var i = 0; i < ids.length; i++) {
 
 htmlContent += '<TR><TD>' + titles[i] + '</TD>';
-if (getDataByIN(ids[i],'IN').length < 3){htmlContent += '<TD colspan=11></td><td>'  + ids[i] + '</td>';} 
+if (getDataByIN(ids[i],'IN').length < 3){htmlContent += '<TD colspan=11>設定なし</td><td>'  + ids[i] + '</td>';} 
 else { 
 htmlContent += '<TD>' + getDataByIN(ids[i],'QAT').split(' ')[0] + '</TD>';
 htmlContent += '<TD>' + getDataByIN(ids[i],'TS') + '</TD>';
@@ -362,7 +362,22 @@ htmlContent += '<TD>' + getDataByIN(ids[i],'IN') + '</TD>';
 htmlContent += '<TD><input type="checkbox"></TD></TR>';
 }
 
+// idsを延べた
+var ids_temp=['AG0000002261','AG0000002447','AG0000001114','AG0000001117','AG0000002265','AG0000001251','AG0000001260','AG0000001321','AG0000002301']
+
+htmlContent +=  isEmptytbl(getNonMatchingKeys(ids_temp,'DJ'));
 htmlContent +='</table></div>'
+htmlContent += "</p><hr style='width: 100%; border: 1px solid #ccc;'><b>詳細</b><br>"; 
+htmlContent += csvContent
+htmlContent += '<script>$(document).ready(function(){$("table.tablesorter").tablesorter();});</script>';
+htmlContent += '</div></body></html>';
+
+
+// 新しいウィンドウにHTMLテーブルを表示
+w.document.write(htmlContent);
+$(document).ready(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+});
 
 function getNonMatchingKeys(ids, label) { 
     var result = [];
@@ -372,46 +387,56 @@ function getNonMatchingKeys(ids, label) {
 
     Object.keys(SP).forEach(function(rowNum) {
         var data = SP[rowNum].data;
+        var rowContent ="";
 
         // idListの中にdata['IN']が含まれていない場合のみ処理
         var isMatching = idList.some(id => id === data['IN']);
+        
+        
         if (!isMatching) {
-            // 指定されたラベルに対応する値をチェック
-            var value = data[label];
-            if (value && value.trim().length > 0) {
-                // 値が存在する場合のみ結果に追加
-                result.push(value + ' (' + data['IN'] + ')');
-            } else {
-                // 値が存在しない場合は<N/A>で追加
-                result.push(`${rowNum}: <N/A>`);
-            }
-        }
-    });
+            var rowContent = `<TR><TD>${data['DJ']}</TD>`;
+            rowContent += `<TD>${getDataByIN(data['IN'],'QAT').split(' ')[0]}</TD>`;
+            rowContent += `<TD>${getDataByIN(data['IN'],'TS')}</TD>`;
+            rowContent += `<TD>${getDataByIN(data['IN'],'CA')}</TD>`;
+            rowContent += `<TD>${getDataByIN(data['IN'],'TF')}</TD>`;
+            rowContent += `<TD>${getDataByIN(data['IN'],'ETR')}</TD>`;
+            rowContent += `<TD>${getDataByIN(data['IN'],'GVS')}</TD>`;
 
-    return result.join('<br>');
+            if (getDataByIN(data['IN'],'ETR').includes('Text')) {
+                rowContent += `<TD>${getDataByIN(data['IN'],'SV')}</TD><TD>-</TD>`;
+            } else {
+                rowContent += `<TD>${getDataByIN(data['IN'],'LL')} - ${getDataByIN(data['IN'],'UL')} (有効：${getDataByIN(data['IN'],'EDADP')}桁)</TD>`;
+                rowContent += `<TD>${parseInt((parseFloat(getDataByIN(data['IN'],'UL')) - parseFloat(getDataByIN(data['IN'],'LL')))*1000)/1000}</TD>`;
+            }
+            rowContent += `<TD>${getDataByIN(data['IN'],'USN')}</TD>`;
+            rowContent += `<TD>${getDataByIN(data['IN'],'CM')}</TD>`;
+            rowContent += `<TD>${getDataByIN(data['IN'],'TC2')}</TD>`;
+            rowContent += `<TD>${getDataByIN(data['IN'],'IN')}</TD>`;
+            rowContent += `<TD><input type="checkbox"></TD>`;
+            ids.push(data['IN'])
+            result.push(rowContent);
+           
+        }
+        
+
+        // dataに含まれるすべてのキーと値をテーブル形式で追加
+
+    });
+    return result.join('');
 }
 // 必要に応じて該当データを表示
-    
 function isEmpty(str) {
-    if (str == null || typeof str === "undefined") {
-      return 'なし';
-    } else if(str.length===0){return 'なし';}else{return str;}
+    if (str == null || typeof str === "undefined" || str.length === 0) {
+        return 'なし';
+    }
+    return str;
+}
+function isEmptytbl(str) {
+    if (str == null || typeof str === "undefined" || str.length === 0) {
+        return '<TR><TD colspan=14>上記以外の規格項目 : なし</TD></TR>:';
+    }
+    return '<TR><td colspan=14></td></tr>'+str+'</TR>';
+}    
 
-    return str.trim().length === 0;
-  }
-// idsを延べた
-  var ids_temp=['AG0000002261','AG0000002447','AG0000001114','AG0000001117','AG0000002265','AG0000001251','AG0000001260','AG0000001321','AG0000002301']
 
-    htmlContent += '<p>上記以外の規格項目: ' + isEmpty(getNonMatchingKeys(ids_temp,'DJ'));
-
-    htmlContent += "</p><hr style='width: 100%; border: 1px solid #ccc;'><b>詳細</b><br>"; 
-    htmlContent += csvContent
-    htmlContent += '<script>$(document).ready(function(){$("table.tablesorter").tablesorter();});</script>';
-    htmlContent += '</div></body></html>';
-
-    // 新しいウィンドウにHTMLテーブルを表示
-    w.document.write(htmlContent);
-    $(document).ready(function () {
-        $('[data-toggle="tooltip"]').tooltip();
-    });
 })();
