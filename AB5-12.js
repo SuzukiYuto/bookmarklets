@@ -191,7 +191,7 @@ function getOriginalHeader(abbreviation) {
 }
 
 // HTMLテーブル生成
-var csvContent = '<table border="1" cellpadding=5 style="border-collapse: collapse;">';
+var csvContent = '<table class="table table-striped-columns table-hover table-sm">';
 csvContent += '<thead><tr><th>AB number</th><th>RowNum</th><th>Item Number</th><th>Label</th><th>Full Name</th><th>Value</th></tr></thead>';
 csvContent += '<tbody>';
 
@@ -308,7 +308,7 @@ var matchingData = getDataByIN('AG0000002261','SV');
 htmlContent += "<p><H1>Specification</b> (" ;
 htmlContent += innerTexts.join(' ').split(" • ")[1].split("_")[0] +" > ";
 htmlContent += h2T + ")</h1><br><div class='container-fluid'>";
-htmlContent += "<table class='table table-bordered table-striped w-100'>";
+htmlContent += "<table class='table table-bordered table-striped w-100  table-hover'>";
 
 // ヘッダー配列
 var headers = [
@@ -335,7 +335,7 @@ var titles=['官能','外観','色調','外観(日)','比重_20/20','屈折率_2
 for(var i = 0; i < ids.length; i++) {
 
 htmlContent += '<TR><TD>' + titles[i] + '</TD>';
-if (getDataByIN(ids[i],'IN').length < 3){htmlContent += '<TD colspan=11>設定なし</td><td>'  + ids[i] + '</td>';} 
+if (getDataByIN(ids[i],'IN').length < 3){htmlContent += '<TD colspan=11 class="text-black-50" >設定なし</td><td>'  + ids[i] + '</td>';} 
 else { 
 htmlContent += '<TD>' + getDataByIN(ids[i],'QAT').split(' ')[0] + '</TD>';
 htmlContent += '<TD>' + getDataByIN(ids[i],'TS') + '</TD>';
