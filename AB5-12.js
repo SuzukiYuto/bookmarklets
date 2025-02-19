@@ -265,10 +265,7 @@ console.log(htmlContent);
     htmlContent += '<script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.min.js"></script>';
     htmlContent += '<style> .container {max-width: 100% !important;}</style></head><body>';
     htmlContent += '<div class="container lg">';
-    htmlContent += '<b>Rev.:</b> ' + revtext + ',&#009;';
-    htmlContent += '<b>Operator: </b>' + nameMatch[1] + ',&#009;';
-    htmlContent += '<b>出力日時:</b> ' + date.toLocaleString() + '&#009;';
-    htmlContent += '<hr style="width: 100%; border: 1px solid #ccc;">';
+
 
 
 // 指定されたIN値に対応するデータを返す関数
@@ -310,7 +307,7 @@ var matchingData = getDataByIN('AG0000002261','SV');
 
 htmlContent += "<p><H1>Specification</b> (" ;
 htmlContent += innerTexts.join(' ').split(" • ")[1].split("_")[0] +" > ";
-htmlContent += h2T + ")</h1><div class='container-fluid'>";
+htmlContent += h2T + ")</h1><br><div class='container-fluid'>";
 htmlContent += "<table class='table table-bordered table-striped w-100'>";
 
 // ヘッダー配列
@@ -326,12 +323,12 @@ var helpTexts = [
 ];
 
 // HTML生成
-htmlContent += "<tr>";
+htmlContent += '<thead class="thead-dark"><tr>';
     headers.forEach((header, index) => {
         var helpText = helpTexts[index] || "";
         htmlContent += `<th data-toggle="tooltip" data-placement="top" title="${helpText}">${header}</th>`;
     });
-    htmlContent += "</tr>";
+    htmlContent += "</tr></thead>";
 
 var ids=['AG0000002261,AG0000002447','AG0000001114','AG0000001117','AG0000002265','AG0000001251','AG0000001260','AG0000001321','AG0000002301']
 var titles=['官能','外観','色調','外観(日)','比重_20/20','屈折率_20℃','重金属（食添）','ヒ素(食添法)']
@@ -369,6 +366,9 @@ var ids_temp=['AG0000002261','AG0000002447','AG0000001114','AG0000001117','AG000
 htmlContent +=  isEmptytbl(getNonMatchingKeys(ids_temp,'DJ'));
 htmlContent +='</table></div>'
 htmlContent += "</p><hr style='width: 100%; border: 1px solid #ccc;'>";
+htmlContent += '<b>Rev.:</b> ' + trim(revtext) + ',&#009;';
+htmlContent += '<b>Operator: </b>' + nameMatch[1] + ',&#009;';
+htmlContent += '<b>出力日時:</b> ' + date.toLocaleString() + '&#009;';
 htmlContent += "<button class='btn btn-primary btn-sm' onclick='toggleDetails()'>全データ表示/非表示</button><br>";
 htmlContent += "<div id='details-section' style='display:none;'>";
 htmlContent += csvContent;
@@ -439,7 +439,7 @@ function isEmpty(str) {
 }
 function isEmptytbl(str) {
     if (str == null || typeof str === "undefined" || str.length === 0) {
-        return '<TR><TD colspan=14>上記以外の規格項目 :  なし</TD></TR>:';
+        return '</table><p>上記以外の規格項目 :  なし</p>';
     }
     return '<TR><td colspan=14></td></tr>'+str+'</TR>';
 }    
