@@ -6,6 +6,9 @@
  
               // importance用のカテゴリを定義
               var importanceCategories = {
+                "none": [
+                    "",
+                ],
                 "カルテアップCC": [
                     "col_1001",
                     "col_1081",
@@ -218,11 +221,13 @@ if (titleElement) {
                 // すべて表示中なら空行を隠す
                 popupWindow.hideEmptyRows();
                 toggleButton.innerText = 'Show All Rows';
+                toggleButton.title = 'Show All Rows';
                 showingAll = false;
             } else {
                 // 非表示状態ならすべて表示
                 popupWindow.showAllRows();
                 toggleButton.innerText = 'Hide Empty Rows';
+                toggleButton.title = 'Hide Empty Rows';
                 showingAll = true;
             }
         };
@@ -231,16 +236,19 @@ if (titleElement) {
         var downloadCsvButton = popupWindow.document.createElement('button');
         downloadCsvButton.id = 'downloadCsv';
         downloadCsvButton.innerText = 'Download CSV';
+        downloadCsvButton.title = 'save data set (CSV file)';
         popupWindow.document.body.appendChild(downloadCsvButton);
         
         var loadCsvButton = popupWindow.document.createElement('button');
         loadCsvButton.id = 'loadCsv';
         loadCsvButton.innerText = 'Load CSV';
+        loadCsvButton.title = "select saved CSV to compare";
         popupWindow.document.body.appendChild(loadCsvButton);
         
         var resetTableButton = popupWindow.document.createElement('button');
         resetTableButton.id = 'resetTable';
         resetTableButton.innerText = 'Reset Table';
+        resetTableButton.title = 'Reset Table view/sort';
         popupWindow.document.body.appendChild(resetTableButton);
         
       
@@ -329,8 +337,18 @@ if (titleElement) {
                 data.v.forEach(function(value, i) {
                     var valueCell = row.insertCell();
                     valueCell.textContent = value || '';
-                    if(i > 0 && data.v[0] !== undefined && value !== data.v[0]){
-                         valueCell.style.backgroundColor = 'gold';
+                    if(i > 0) {
+                        if((data.v[0] || '').trim() === '') {
+                            // value1が空の場合、現在のセルが非空なら色付け
+                            if((value || '').trim() !== '') {
+                                valueCell.style.backgroundColor = 'gold';
+                            }
+                        } else {
+                        // value1が非空の場合、value1と一致しなければ色付け
+                            if(value !== data.v[0]){
+                                valueCell.style.backgroundColor = 'gold';
+                            }
+                        }
                     }
                 });
             }
