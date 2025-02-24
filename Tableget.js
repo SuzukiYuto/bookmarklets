@@ -9,7 +9,7 @@
     }
     var t=Array.from(document.querySelectorAll('table.GMSection')).filter(function(t){return !h(t)});
     if(t.length===0){
-        alert('classが"GMSection"のテーブルが見つかりませんでした。');
+        alert('AgileのAN/CC/AK>title blockか、AB>BOMを表示してから起動してください。');
         return;
     }
     var b=document.querySelector('.breadcrumb_wrapper ul.breadcrumbs'),
