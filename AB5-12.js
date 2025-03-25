@@ -337,7 +337,7 @@ for(var i = 0; i < ids.length; i++) {
 htmlContent += '<TR><TD>' + titles[i] + '</TD>';
 if (getDataByIN(ids[i],'IN').length < 3){htmlContent += '<TD colspan=11 class="text-black-50" >設定なし</td><td>'  + ids[i] + '</td>';} 
 else { 
-htmlContent += '<TD>' + getDataByIN(ids[i],'QAT').split(' ')[0] + '</TD>';
+htmlContent += '<TD>' + getDataByIN(ids[i],'QAT') + '</TD>';
 htmlContent += '<TD>' + getDataByIN(ids[i],'TS') + '</TD>';
 htmlContent += '<TD>' + getDataByIN(ids[i],'CA') + '</td>';
 htmlContent += '<TD>' + getDataByIN(ids[i],'TF') + '</td>';
