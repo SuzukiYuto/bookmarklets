@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>CSV Pivot Table viewer</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css" rel="stylesheet">
+  <style>
+    td, th { text-align: center; vertical-align: middle; }
+    .tooltip-hover:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      background: #333; color: #fff;
+      padding: 4px 8px;
+      white-space: pre;
+      z-index: 1;
+    }
+    /* 行ラベルのスタイル */
+.label-row th {
+  background-color: #e3f2fd; /* 薄い青 */
+}
+
+/* 列ラベルのスタイル */
+.label-col {
+  background-color: #e8f5e9; /* 薄い緑 */
+}
+
+/* 項目の区切りごとに背景色を交互に変える */
+.alt-group {
+  background-color: #fce4ec; /* ピンク */
+}
+  </style>
+</head>
+<body class="p-3">
+
+<h3>CSV pivot Table Viewer</h3>
+<div id="pivotControls" style="display:none;" class="mb-3">
+    filterは選択データでデータを絞り込みます。Row, Colはそれぞれ、縦軸、横軸を設定します。<br>
+    <label>Filter 1:</label>
+    <select id="filter1"></select>
+    <select id="filter1Value"></select>
+    <label>Filter 2:</label>
+    <select id="filter2"></select>
+    <select id="filter2Value"></select>
+    <br>
+    <label>Row1:</label>
+    <select id="row1"></select>
+    <label>Row2:</label>
+    <select id="row2"></select> &nbsp;/&nbsp;
+    <label>Col1:</label>
+    <select id="col1"></select>
+    <label>Col2:</label>
+    <select id="col2"></select>
+    <button class="btn btn-primary btn-sm" onclick="renderTable()">Run</button>
+  </div>
+
+<div id="tableArea" class="mb-5"></div>
+
+<div id="columnSelector" class="mb-2"></div>
+<div id="allDataTable" class="table-responsive"></div>
+
+CSVfileを読み込んでPivot表示します。<br>
+使い方：ファイルの選択ボタンを押して、CSVfileを選択し、LoadCSVを押す。Filter, Row, Colを選択して、Runを押す<br><br>
+
+<input type="file" id="csvFile" class="form-control" accept=".csv">
+<button class="btn btn-primary btn-sm" onclick="loadCSV()">Load CSV</button>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+<script>
+let data = [];
+
+function fillSelects() {
+  const headers = Object.keys(data[0]);
+  for (let id of ['filter1', 'filter2', 'row1', 'row2', 'col1', 'col2']) {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value=""></option>' + headers.map(h => `<option value="${h}">${h}</option>`).join('');
+  }
+  updateFilterValues('filter1');
+  updateFilterValues('filter2');
+}
+
+function updateFilterValues(filterId) {
+  const key = document.getElementById(filterId).value;
+  const selectId = filterId + 'Value';
+  const select = document.getElementById(selectId);
+  if (!key) {
+    select.innerHTML = '<option value=""></option>';
+    return;
+  }
+  const values = [...new Set(data.map(d => d[key]))].sort();
+  select.innerHTML = '<option value=""></option>' + values.map(v => `<option value="${v}">${v}</option>`).join('');
+}
+
+document.getElementById('filter1').addEventListener('change', () => updateFilterValues('filter1'));
+document.getElementById('filter2').addEventListener('change', () => updateFilterValues('filter2'));
+
+function loadCSV() {
+  const file = document.getElementById('csvFile').files[0];
+  if (!file) return alert('Please select a CSV file!');
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    Papa.parse(e.target.result, {
+      header: true,
+      skipEmptyLines: true,
+      complete: function(results) {
+        const cleanHeaders = Object.keys(results.data[0]).filter(h => h && h !== 'undefined');
+        data = results.data
+          .filter(row => row && Object.values(row).some(v => v !== ''))
+          .map(row => {
+            let newRow = {};
+            cleanHeaders.forEach(h => {
+              newRow[h] = row[h] ?? '';
+            });
+            return newRow;
+          });
+
+        fillSelects();
+        document.getElementById("pivotControls").style.display = "block";
+        renderAllDataTable();
+      }
+    });
+  };
+  reader.readAsText(file);
+  document.getElementById("pivotControls").style.display = "block";
+}
+
+function renderTable() {
+  const f1 = document.getElementById('filter1').value;
+  const f1v = document.getElementById('filter1Value').value;
+  const f2 = document.getElementById('filter2').value;
+  const f2v = document.getElementById('filter2Value').value;
+  const row1 = document.getElementById('row1').value;
+  const row2 = document.getElementById('row2').value;
+  const col1 = document.getElementById('col1').value;
+  const col2 = document.getElementById('col2').value;
+
+  let filtered = data.filter(d => {
+    let ok = true;
+    if (f1) ok = ok && String(d[f1]) === f1v;
+    if (f2) ok = ok && String(d[f2]) === f2v;
+    return ok;
+  });
+
+  if (filtered.length === 0) {
+    document.getElementById('tableArea').innerHTML = '<div class="text-danger">その条件に当てはまるレコードがありません。filterが正しく選択されているか確認ください。</div>';
+    return;
+  }
+
+  const rKeys1 = [...new Set(filtered.map(d => d[row1] || ''))];
+  const rKeys2 = row2 ? [...new Set(filtered.map(d => d[row2] || ''))] : [''];
+  const cKeys1 = [...new Set(filtered.map(d => d[col1] || ''))];
+  const cKeys2 = col2 ? [...new Set(filtered.map(d => d[col2] || ''))] : [''];
+
+  const table = document.createElement('table');
+  table.className = "table table-bordered table-sm text-nowrap";
+
+  // Header Rows
+  const tr1 = table.insertRow();
+  tr1.insertCell(); // top-left
+  if (col2) {
+  for (let c1 of cKeys1) {
+    const th = document.createElement('th');
+    th.colSpan = cKeys2.length;
+    th.textContent = c1;
+    th.classList.add('label-row');
+    tr1.appendChild(th);
+  }
+  const tr2 = table.insertRow();
+  tr2.insertCell(); // 左上角の空白
+  for (let c1 of cKeys1) {
+    for (let c2 of cKeys2) {
+      const th = document.createElement('th');
+      th.textContent = c2;
+      th.classList.add('label-row');
+      tr2.appendChild(th);
+    }
+  }
+} else {
+  for (let c1 of cKeys1) {
+    const th = document.createElement('th');
+    th.textContent = c1;
+    th.classList.add('label-row');
+    tr1.appendChild(th);
+  }
+}
+
+  // Rows (Row headers hidden)
+  for (let r1 of rKeys1) {
+  for (let r2 of rKeys2) {
+    const row = table.insertRow();
+    const th = document.createElement('th');
+    let label = r1;
+    if (row2) label = `${r1} / ${r2}`;
+    th.textContent = label;
+    th.classList.add('label-col');
+    row.appendChild(th);
+
+      for (let c1 of cKeys1) {
+        for (let c2 of cKeys2) {
+          const match = filtered.filter(d =>
+            (d[row1] || '') === r1 &&
+            (!row2 || (d[row2] || '') === r2) &&
+            (d[col1] || '') === c1 &&
+            (!col2 || (d[col2] || '') === c2)
+          );
+          const cell = row.insertCell();
+          match.forEach(m => {
+            const div = document.createElement('div');
+            div.textContent = `${m.ID} - ${m.description}`;
+            div.className = "tooltip-hover";
+            div.setAttribute('data-tooltip', Object.entries(m).map(([k, v]) => `${k}: ${v}`).join('\n'));
+            div.onclick = () => {
+              const w = window.open('', '_blank');
+              w.document.write(`<pre>${JSON.stringify(m, null, 2)}</pre>`);
+            };
+            cell.appendChild(div);
+            cell.appendChild(document.createElement('br'));
+          });
+        }
+      }
+    }
+  }
+
+  document.getElementById('tableArea').innerHTML = '';
+  document.getElementById('tableArea').appendChild(table);
+
+  renderAllDataTable();
+}
+
+function renderAllDataTable() {
+  const headers = Object.keys(data[0]);
+  const selectorDiv = document.getElementById('columnSelector');
+
+  // 初回だけチェックボックスを作成
+  if (!selectorDiv.hasChildNodes()) {
+    selectorDiv.innerHTML = '<hr><h3>All data</h3><strong>表示する列：</strong><br>';
+    headers.forEach(h => {
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.value = h;
+      checkbox.checked = true;
+      checkbox.className = 'column-check';
+      checkbox.id = `col_${h}`;
+
+      const label = document.createElement('label');
+      label.htmlFor = `col_${h}`;
+      label.textContent = h;
+      label.style.marginRight = '10px';
+
+      selectorDiv.appendChild(checkbox);
+      selectorDiv.appendChild(label);
+    });
+
+    // チェックボックスにイベント追加（初回のみ）
+    document.querySelectorAll('.column-check').forEach(cb => {
+      cb.addEventListener('change', renderFilteredAllDataTable);
+    });
+  }
+
+  renderFilteredAllDataTable(); // 初期描画
+}
+
+function renderFilteredAllDataTable() {
+  const headers = Object.keys(data[0]);
+  const selectedCols = headers.filter(h => document.getElementById(`col_${h}`)?.checked);
+
+  // DataTableの既存インスタンスを破棄
+  if ($.fn.DataTable.isDataTable('#allDataTable table')) {
+    $('#allDataTable table').DataTable().destroy();
+  }
+
+  const allTable = document.createElement('table');
+  allTable.className = 'table table-striped table-bordered table-sm';
+  const thead = allTable.createTHead().insertRow();
+  selectedCols.forEach(h => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    thead.appendChild(th);
+  });
+
+  const tbody = allTable.createTBody();
+  data.forEach(row => {
+    const tr = tbody.insertRow();
+    selectedCols.forEach(h => {
+      const td = tr.insertCell();
+      td.textContent = row[h];
+    });
+  });
+
+  document.getElementById('allDataTable').innerHTML = '';
+  document.getElementById('allDataTable').appendChild(allTable);
+
+  $('#allDataTable table').DataTable({
+    paging: true,
+    searching: true,
+    ordering: true
+  });
+}
+
+
+
+</script>
+</body>
+</html>
