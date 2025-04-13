@@ -67,6 +67,11 @@
 
 CSVfileを読み込んでPivot表示します。<br>
 使い方：ファイルの選択ボタンを押して、CSVfileを選択し、LoadCSVを押す。Filter, Row, Colを選択して、Runを押す<br><br>
+<label>Encoding:</label>
+<select id="encodingSelect" class="form-select-sm">
+  <option value="UTF-8">UTF-8</option>
+  <option value="Shift_JIS" selected>Shift-JIS</option>
+</select>
 
 <input type="file" id="csvFile" class="form-control" accept=".csv">
 <button class="btn btn-primary btn-sm" onclick="loadCSV()">Load CSV</button>
@@ -115,8 +120,9 @@ document.getElementById('filter2').addEventListener('change', () => updateFilter
 function loadCSV() {
   const file = document.getElementById('csvFile').files[0];
   if (!file) return alert('Please select a CSV file!');
+  const encoding = document.getElementById('encodingSelect').value;
+  const reader = new FileReader(); // ← これを先に定義
 
-  const reader = new FileReader();
   reader.onload = function(e) {
     Papa.parse(e.target.result, {
       header: true,
@@ -139,10 +145,9 @@ function loadCSV() {
       }
     });
   };
-  reader.readAsText(file);
-  document.getElementById("pivotControls").style.display = "block";
-}
 
+  reader.readAsText(file, encoding); // ← こっちは後
+}
 function renderTable() {
   const f1 = document.getElementById('filter1').value;
   const f1v = document.getElementById('filter1Value').value;
