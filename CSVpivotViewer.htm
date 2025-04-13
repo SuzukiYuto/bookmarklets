@@ -36,6 +36,12 @@
 <h3>CSV pivot Table Viewer</h3>
 <div id="pivotControls" style="display:none;" class="mb-3">
     filterは選択データでデータを絞り込みます。Row, Colはそれぞれ、縦軸、横軸を設定します。<br>
+    <div class="mb-2">
+        <label>Display label:</label>
+        <select id="labelSelect1"></select>
+        <select id="labelSelect2"></select>
+      </div>
+
     <label>Filter 1:</label>
     <select id="filter1"></select>
     <select id="filter1Value"></select>
@@ -71,6 +77,15 @@ CSVfileを読み込んでPivot表示します。<br>
 <script>
 let data = [];
 
+function fillLabelSelects() {
+  const headers = Object.keys(data[0]);
+  const opts = headers.map(h => `<option value="${h}">${h}</option>`).join('');
+  document.getElementById('labelSelect1').innerHTML = opts;
+  document.getElementById('labelSelect2').innerHTML = opts;
+  document.getElementById('labelSelect1').value = headers[0];
+  document.getElementById('labelSelect2').value = headers[1];
+}
+
 function fillSelects() {
   const headers = Object.keys(data[0]);
   for (let id of ['filter1', 'filter2', 'row1', 'row2', 'col1', 'col2']) {
@@ -79,6 +94,7 @@ function fillSelects() {
   }
   updateFilterValues('filter1');
   updateFilterValues('filter2');
+  fillLabelSelects();
 }
 
 function updateFilterValues(filterId) {
@@ -209,7 +225,9 @@ function renderTable() {
           const cell = row.insertCell();
           match.forEach(m => {
             const div = document.createElement('div');
-            div.textContent = `${m.ID} - ${m.description}`;
+            const label1 = document.getElementById('labelSelect1').value;
+            const label2 = document.getElementById('labelSelect2').value;
+            div.textContent = `${m[label1]} - ${m[label2]}`;
             div.className = "tooltip-hover";
             div.setAttribute('data-tooltip', Object.entries(m).map(([k, v]) => `${k}: ${v}`).join('\n'));
             div.onclick = () => {
