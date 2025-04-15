@@ -7,14 +7,23 @@
   <link href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css" rel="stylesheet">
   <style>
     td, th { text-align: center; vertical-align: middle; }
-    .tooltip-hover:hover::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      background: #333; color: #fff;
-      padding: 4px 8px;
-      white-space: pre;
-      z-index: 1;
-    }
+    .tooltip-hover {
+  position: relative;
+  cursor: pointer;
+}
+
+.custom-tooltip {
+  position: fixed;
+  background: #333;
+  color: #fff;
+  padding: 4px 8px;
+  white-space: pre;
+  z-index: 9999;
+  border-radius: 4px;
+  font-size: 12px;
+  display: none;
+  pointer-events: none;
+}
     /* 行ラベルのスタイル */
 .label-row th {
   background-color: #e3f2fd; /* 薄い青 */
@@ -36,28 +45,33 @@
 <h3>CSV pivot Table Viewer</h3>
 <div id="pivotControls" style="display:none;" class="mb-3">
     filterは選択データでデータを絞り込みます。Row, Colはそれぞれ、縦軸、横軸を設定します。<br>
-    <div class="mb-2">
-        <label>Display label:</label>
-        <select id="labelSelect1"></select>
-        <select id="labelSelect2"></select>
+    <div class="d-flex align-items-start mb-2">      
+        <div class="me-4 align-self-start">
+          <label>Filter 1:</label>
+          <select id="filter1" class="form-select-sm"></select><br>
+          <select id="filter1Value" multiple class="form-select-sm" size="5" style="min-width: 150px;"></select>
+        </div>
+        <div class="me-4 align-self-start">
+          <label>Filter 2:</label>
+          <select id="filter2" class="form-select-sm"></select><br>
+          <select id="filter2Value" multiple class="form-select-sm" size="5" style="min-width: 150px;"></select>
+        </div>
+        <div class="align-self-start">
+          /&nbsp;&nbsp;<label>Row1:</label>
+          <select id="row1"></select>
+          <label>Row2:</label>
+          <select id="row2"></select> &nbsp;&nbsp;/&nbsp;&nbsp;
+          <label>Col1:</label>
+          <select id="col1"></select>
+          <label>Col2:</label>
+          <select id="col2"></select>&nbsp;&nbsp;
+          <button class="btn btn-primary btn-sm mt-1" onclick="renderTable()">Pivot表示</button>
+          <label>Display label:</label>
+          <select id="labelSelect1"></select>
+          <select id="labelSelect2"></select>
+        </div>
       </div>
-
-    <label>Filter 1:</label>
-    <select id="filter1"></select>
-    <select id="filter1Value"></select>
-    <label>Filter 2:</label>
-    <select id="filter2"></select>
-    <select id="filter2Value"></select>
-    <br>
-    <label>Row1:</label>
-    <select id="row1"></select>
-    <label>Row2:</label>
-    <select id="row2"></select> &nbsp;/&nbsp;
-    <label>Col1:</label>
-    <select id="col1"></select>
-    <label>Col2:</label>
-    <select id="col2"></select>
-    <button class="btn btn-primary btn-sm" onclick="renderTable()">Run</button>
+</div>
   </div>
 
 <div id="tableArea" class="mb-5"></div>
@@ -148,11 +162,16 @@ function loadCSV() {
 
   reader.readAsText(file, encoding); // ← こっちは後
 }
+function getSelectedValues(selectElementId) {
+  const options = document.getElementById(selectElementId).selectedOptions;
+  return Array.from(options).map(o => o.value).filter(v => v !== '');
+}
+
 function renderTable() {
   const f1 = document.getElementById('filter1').value;
-  const f1v = document.getElementById('filter1Value').value;
+  const f1vList = getSelectedValues('filter1Value');
   const f2 = document.getElementById('filter2').value;
-  const f2v = document.getElementById('filter2Value').value;
+  const f2vList = getSelectedValues('filter2Value');
   const row1 = document.getElementById('row1').value;
   const row2 = document.getElementById('row2').value;
   const col1 = document.getElementById('col1').value;
@@ -160,8 +179,8 @@ function renderTable() {
 
   let filtered = data.filter(d => {
     let ok = true;
-    if (f1) ok = ok && String(d[f1]) === f1v;
-    if (f2) ok = ok && String(d[f2]) === f2v;
+    if (f1 && f1vList.length > 0) ok = ok && f1vList.includes(String(d[f1]));
+    if (f2 && f2vList.length > 0) ok = ok && f2vList.includes(String(d[f2]));
     return ok;
   });
 
@@ -321,10 +340,45 @@ function renderFilteredAllDataTable() {
     searching: true,
     ordering: true
   });
+  document.addEventListener('mouseover', function (e) {
+  const tooltipDiv = document.getElementById('tooltip');
+  if (e.target.classList.contains('tooltip-hover')) {
+    const text = e.target.getAttribute('data-tooltip');
+    tooltipDiv.textContent = text;
+    tooltipDiv.style.display = 'block';
+  }
+});
+
+document.addEventListener('mousemove', function (e) {
+  const tooltipDiv = document.getElementById('tooltip');
+  if (tooltipDiv.style.display === 'block') {
+    let x = e.clientX + 10;
+    let y = e.clientY + 10;
+
+    // 画面端チェック
+    const tooltipRect = tooltipDiv.getBoundingClientRect();
+    const maxX = window.innerWidth - tooltipRect.width - 10;
+    const maxY = window.innerHeight - tooltipRect.height - 10;
+
+    if (x > maxX) x = maxX;
+    if (y > maxY) y = maxY;
+
+    tooltipDiv.style.left = x + 'px';
+    tooltipDiv.style.top = y + 'px';
+  }
+});
+
+document.addEventListener('mouseout', function (e) {
+  const tooltipDiv = document.getElementById('tooltip');
+  if (e.target.classList.contains('tooltip-hover')) {
+    tooltipDiv.style.display = 'none';
+  }
+});
 }
 
 
 
 </script>
+<div id="tooltip" class="custom-tooltip"></div>
 </body>
 </html>
