@@ -1,102 +1,141 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Pivot Table with Filters</title>
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-.label-row th {
-  background-color: #e3f2fd;
-  display: inline;
+  <meta charset="utf-8">
+  <title>CSV Pivot Table viewer</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css" rel="stylesheet">
+  <style>
+    td, th { text-align: center; vertical-align: middle; }
+    .tooltip-hover {
+  position: relative;
+  cursor: pointer;
 }
-</style>
+
+.custom-tooltip {
+  position: fixed;
+  background: #333;
+  color: #fff;
+  padding: 4px 8px;
+  white-space: pre;
+  z-index: 9999;
+  border-radius: 4px;
+  font-size: 12px;
+  display: none;
+  pointer-events: none;
+}
+    /* 行ラベルのスタイル */
+.label-row th {
+  background-color: #e3f2fd; /* 薄い青 */
+}
+
+/* 列ラベルのスタイル */
+.label-col {
+  background-color: #e8f5e9; /* 薄い緑 */
+}
+
+/* 項目の区切りごとに背景色を交互に変える */
+.alt-group {
+  background-color: #fce4ec; /* ピンク */
+}
+  </style>
 </head>
-<body class="m-4">
+<body class="p-3">
 
-<h2>Pivot Table with Filters</h2>
-
-<div class="d-flex mb-2">
-  <div class="me-4 align-self-start">
-    <label>Filter 1:</label>
-    <select id="filter1" class="form-select-sm"></select><br>
-    <select id="filter1Value" multiple class="form-select-sm" size="5" style="min-width: 150px;"></select>
-  </div>
-  <div class="me-4 align-self-start">
-    <label>Filter 2:</label>
-    <select id="filter2" class="form-select-sm"></select><br>
-    <select id="filter2Value" multiple class="form-select-sm" size="5" style="min-width: 150px;"></select>
-  </div>
-  <div class="me-4 align-self-start">
-    <label>Filter 3:</label>
-    <select id="filter3" class="form-select-sm"></select><br>
-    <select id="filter3Value" multiple class="form-select-sm" size="5" style="min-width: 150px;"></select>
-  </div>
-  <div class="me-4 align-self-start">
-    <label>Filter 4:</label>
-    <select id="filter4" class="form-select-sm"></select><br>
-    <select id="filter4Value" multiple class="form-select-sm" size="5" style="min-width: 150px;"></select>
-  </div>
-  <div class="me-4 align-self-start">
-    <label>Row:</label>
-    <select id="row1" class="form-select-sm"></select><br>
-    <select id="row2" class="form-select-sm"></select>
-  </div>
-  <div class="me-4 align-self-start">
-    <label>Column:</label>
-    <select id="col1" class="form-select-sm"></select><br>
-    <select id="col2" class="form-select-sm"></select>
-  </div>
-  <div class="align-self-start">
-    <label>Chart:</label><br>
-    <button class="btn btn-sm btn-primary" onclick="drawChart()">Draw</button>
-  </div>
+<h3>CSV pivot Table Viewer</h3>
+<div id="pivotControls" style="display:none;" class="mb-3">
+    filterは選択データでデータを絞り込みます。Row, Colはそれぞれ、縦軸、横軸を設定します。<br>
+    <div class="d-flex align-items-start mb-2">      
+        <div class="me-4 align-self-start">
+          <label>Filter 1:</label>
+          <select id="filter1" class="form-select-sm"></select><br>
+          <select id="filter1Value" multiple class="form-select-sm" size="5" style="min-width: 150px;"></select>
+        </div>
+        <div class="me-4 align-self-start">
+          <label>Filter 2:</label>
+          <select id="filter2" class="form-select-sm"></select><br>
+          <select id="filter2Value" multiple class="form-select-sm" size="5" style="min-width: 150px;"></select>
+        </div>
+        <div class="me-4 align-self-start">
+          <label>Filter 3:</label>
+          <select id="filter3" class="form-select-sm"></select><br>
+          <select id="filter3Value" multiple class="form-select-sm" size="5" style="min-width: 150px;"></select>
+        </div>
+        <div class="me-4 align-self-start">
+          <label>Filter 4:</label>
+          <select id="filter4" class="form-select-sm"></select><br>
+          <select id="filter4Value" multiple class="form-select-sm" size="5" style="min-width: 150px;"></select>
+        </div>
+        <div class="align-self-start">
+          /&nbsp;&nbsp;<label>Row1:</label>
+          <select id="row1"></select>
+          <label>Row2:</label>
+          <select id="row2"></select> &nbsp;&nbsp;/&nbsp;&nbsp;
+          <label>Col1:</label>
+          <select id="col1"></select>
+          <label>Col2:</label>
+          <select id="col2"></select>&nbsp;&nbsp;
+          <button class="btn btn-primary btn-sm mt-1" onclick="renderTable()">Pivot表示</button>
+          <label>Display label:</label>
+          <select id="labelSelect1"></select>
+          <select id="labelSelect2"></select>
+        </div>
+      </div>
 </div>
+  </div>
 
-<table id="pivotTable" class="table table-sm table-bordered"></table>
+<div id="tableArea" class="mb-5"></div>
 
-<canvas id="chart" width="800" height="400"></canvas>
+<div id="columnSelector" class="mb-2"></div>
+<div id="allDataTable" class="table-responsive"></div>
 
+CSVfileを読み込んでPivot表示します。<br>
+使い方：ファイルの選択ボタンを押して、CSVfileを選択し、LoadCSVを押す。Filter, Row, Colを選択して、Runを押す<br><br>
+<label>Encoding:</label>
+<select id="encodingSelect" class="form-select-sm">
+  <option value="UTF-8">UTF-8</option>
+  <option value="Shift_JIS" selected>Shift-JIS</option>
+</select>
+
+<input type="file" id="csvFile" class="form-control" accept=".csv">
+<button class="btn btn-primary btn-sm" onclick="loadCSV()">Load CSV</button>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 <script>
 let data = [];
-let pivot = {};
 
-function loadCSV(csv) {
-  Papa.parse(csv, {
-    header: true,
-    skipEmptyLines: true,
-    complete: function(results) {
-      data = results.data;
-      fillSelects();
-      renderTable();
-    }
-  });
+function fillLabelSelects() {
+  const headers = Object.keys(data[0]);
+  const opts = headers.map(h => `<option value="${h}">${h}</option>`).join('');
+  document.getElementById('labelSelect1').innerHTML = opts;
+  document.getElementById('labelSelect2').innerHTML = opts;
+  document.getElementById('labelSelect1').value = headers[0];
+  document.getElementById('labelSelect2').value = headers[1];
 }
 
 function fillSelects() {
-  const keys = Object.keys(data[0]);
+  const headers = Object.keys(data[0]);
   for (let id of ['filter1', 'filter2', 'filter3', 'filter4', 'row1', 'row2', 'col1', 'col2']) {
     const sel = document.getElementById(id);
-    sel.innerHTML = '<option value=""></option>' + keys.map(k => `<option value="${k}">${k}</option>`).join('');
+    sel.innerHTML = '<option value=""></option>' + headers.map(h => `<option value="${h}">${h}</option>`).join('');
   }
-}
-
-function getSelectedValues(id) {
-  return Array.from(document.getElementById(id).selectedOptions).map(o => o.value);
+  updateFilterValues('filter1');
+  updateFilterValues('filter2');
+  fillLabelSelects();
 }
 
 function updateFilterValues(filterId) {
-  const valId = filterId + 'Value';
-  const col = document.getElementById(filterId).value;
-  const sel = document.getElementById(valId);
-  if (!col) {
-    sel.innerHTML = '';
+  const key = document.getElementById(filterId).value;
+  const selectId = filterId + 'Value';
+  const select = document.getElementById(selectId);
+  if (!key) {
+    select.innerHTML = '<option value=""></option>';
     return;
   }
-  const unique = [...new Set(data.map(d => d[col]))].sort();
-  sel.innerHTML = unique.map(v => `<option value="${v}">${v}</option>`).join('');
+  const values = [...new Set(data.map(d => d[key]))].sort();
+  select.innerHTML = '<option value=""></option>' + values.map(v => `<option value="${v}">${v}</option>`).join('');
 }
 
 document.getElementById('filter1').addEventListener('change', () => updateFilterValues('filter1'));
@@ -104,105 +143,260 @@ document.getElementById('filter2').addEventListener('change', () => updateFilter
 document.getElementById('filter3').addEventListener('change', () => updateFilterValues('filter3'));
 document.getElementById('filter4').addEventListener('change', () => updateFilterValues('filter4'));
 
+function loadCSV() {
+  const file = document.getElementById('csvFile').files[0];
+  if (!file) return alert('Please select a CSV file!');
+  const encoding = document.getElementById('encodingSelect').value;
+  const reader = new FileReader(); // ← これを先に定義
+
+  reader.onload = function(e) {
+    Papa.parse(e.target.result, {
+      header: true,
+      skipEmptyLines: true,
+      complete: function(results) {
+        const cleanHeaders = Object.keys(results.data[0]).filter(h => h && h !== 'undefined');
+        data = results.data
+          .filter(row => row && Object.values(row).some(v => v !== ''))
+          .map(row => {
+            let newRow = {};
+            cleanHeaders.forEach(h => {
+              newRow[h] = row[h] ?? '';
+            });
+            return newRow;
+          });
+
+        fillSelects();
+        document.getElementById("pivotControls").style.display = "block";
+        renderAllDataTable();
+      }
+    });
+  };
+
+  reader.readAsText(file, encoding); // ← こっちは後
+}
+function getSelectedValues(selectElementId) {
+  const options = document.getElementById(selectElementId).selectedOptions;
+  return Array.from(options).map(o => o.value).filter(v => v !== '');
+}
+
 function renderTable() {
   const f1 = document.getElementById('filter1').value;
   const f1vList = getSelectedValues('filter1Value');
   const f2 = document.getElementById('filter2').value;
   const f2vList = getSelectedValues('filter2Value');
+  const row1 = document.getElementById('row1').value;
+  const row2 = document.getElementById('row2').value;
+  const col1 = document.getElementById('col1').value;
+  const col2 = document.getElementById('col2').value;
   const f3 = document.getElementById('filter3').value;
   const f3vList = getSelectedValues('filter3Value');
   const f4 = document.getElementById('filter4').value;
   const f4vList = getSelectedValues('filter4Value');
-  const r1 = document.getElementById('row1').value;
-  const r2 = document.getElementById('row2').value;
-  const c1 = document.getElementById('col1').value;
-  const c2 = document.getElementById('col2').value;
 
-  pivot = {};
-
-  for (let d of data) {
+  let filtered = data.filter(d => {
     let ok = true;
     if (f1 && f1vList.length > 0) ok = ok && f1vList.includes(String(d[f1]));
     if (f2 && f2vList.length > 0) ok = ok && f2vList.includes(String(d[f2]));
     if (f3 && f3vList.length > 0) ok = ok && f3vList.includes(String(d[f3]));
     if (f4 && f4vList.length > 0) ok = ok && f4vList.includes(String(d[f4]));
-    if (!ok) continue;
+    return ok;
+  });
 
-    const rowKey = (r1 ? d[r1] : '') + (r2 ? '|' + d[r2] : '');
-    const colKey = (c1 ? d[c1] : '') + (c2 ? '|' + d[c2] : '');
-
-    if (!pivot[rowKey]) pivot[rowKey] = {};
-    pivot[rowKey][colKey] = (pivot[rowKey][colKey] || 0) + 1;
+  if (filtered.length === 0) {
+    document.getElementById('tableArea').innerHTML = '<div class="text-danger">その条件に当てはまるレコードがありません。filterが正しく選択されているか確認ください。</div>';
+    return;
   }
 
-  const table = document.getElementById('pivotTable');
-  table.innerHTML = '';
+  const rKeys1 = [...new Set(filtered.map(d => d[row1] || ''))];
+  const rKeys2 = row2 ? [...new Set(filtered.map(d => d[row2] || ''))] : [''];
+  const cKeys1 = [...new Set(filtered.map(d => d[col1] || ''))];
+  const cKeys2 = col2 ? [...new Set(filtered.map(d => d[col2] || ''))] : [''];
 
-  const headerRow = table.insertRow();
-  headerRow.className = 'label-row';
-  headerRow.insertCell();
-  const colKeys = [...new Set(Object.values(pivot).flatMap(r => Object.keys(r)))].sort();
-  for (let k of colKeys) {
+  const table = document.createElement('table');
+  table.className = "table table-bordered table-sm text-nowrap";
+
+  // Header Rows
+  const tr1 = table.insertRow();
+  tr1.insertCell(); // top-left
+  if (col2) {
+  for (let c1 of cKeys1) {
     const th = document.createElement('th');
-    th.textContent = k;
-    headerRow.appendChild(th);
+    th.colSpan = cKeys2.length;
+    th.textContent = c1;
+    th.classList.add('label-row');
+    tr1.appendChild(th);
   }
-
-  for (let rk of Object.keys(pivot).sort()) {
-    const tr = table.insertRow();
-    const th = document.createElement('th');
-    th.textContent = rk;
-    tr.appendChild(th);
-    for (let ck of colKeys) {
-      const td = tr.insertCell();
-      td.textContent = pivot[rk][ck] || '';
+  const tr2 = table.insertRow();
+  tr2.insertCell(); // 左上角の空白
+  for (let c1 of cKeys1) {
+    for (let c2 of cKeys2) {
+      const th = document.createElement('th');
+      th.textContent = c2;
+      th.classList.add('label-row');
+      tr2.appendChild(th);
     }
   }
+} else {
+  for (let c1 of cKeys1) {
+    const th = document.createElement('th');
+    th.textContent = c1;
+    th.classList.add('label-row');
+    tr1.appendChild(th);
+  }
 }
 
-for (let id of ['filter1Value', 'filter2Value', 'filter3Value', 'filter4Value', 'row1', 'row2', 'col1', 'col2']) {
-  document.getElementById(id).addEventListener('change', renderTable);
-}
+  // Rows (Row headers hidden)
+  for (let r1 of rKeys1) {
+  for (let r2 of rKeys2) {
+    const row = table.insertRow();
+    const th = document.createElement('th');
+    let label = r1;
+    if (row2) label = `${r1} / ${r2}`;
+    th.textContent = label;
+    th.classList.add('label-col');
+    row.appendChild(th);
 
-function drawChart() {
-  const ctx = document.getElementById('chart').getContext('2d');
-  if (window.myChart) window.myChart.destroy();
-  const labels = [...new Set(Object.values(pivot).flatMap(r => Object.keys(r)))].sort();
-  const datasets = [];
-
-  for (let [rk, row] of Object.entries(pivot)) {
-    const data = labels.map(l => row[l] || 0);
-    datasets.push({ label: rk, data, backgroundColor: randomColor() });
+      for (let c1 of cKeys1) {
+        for (let c2 of cKeys2) {
+          const match = filtered.filter(d =>
+            (d[row1] || '') === r1 &&
+            (!row2 || (d[row2] || '') === r2) &&
+            (d[col1] || '') === c1 &&
+            (!col2 || (d[col2] || '') === c2)
+          );
+          const cell = row.insertCell();
+          match.forEach(m => {
+            const div = document.createElement('div');
+            const label1 = document.getElementById('labelSelect1').value;
+            const label2 = document.getElementById('labelSelect2').value;
+            div.textContent = `${m[label1]} - ${m[label2]}`;
+            div.className = "tooltip-hover";
+            div.setAttribute('data-tooltip', Object.entries(m).map(([k, v]) => `${k}: ${v}`).join('\n'));
+            div.onclick = () => {
+              const w = window.open('', '_blank');
+              w.document.write(`<pre>${JSON.stringify(m, null, 2)}</pre>`);
+            };
+            cell.appendChild(div);
+            cell.appendChild(document.createElement('br'));
+          });
+        }
+      }
+    }
   }
 
-  window.myChart = new Chart(ctx, {
-    type: 'bar',
-    data: { labels, datasets },
-    options: {
-      plugins: {
-        legend: { display: true },
-        datalabels: {
-          anchor: 'end',
-          align: 'top',
-          formatter: Math.round
-        }
-      },
-      responsive: true,
-      scales: {
-        x: { stacked: true },
-        y: { stacked: true, beginAtZero: true }
-      }
-    },
-    plugins: [ChartDataLabels]
+  document.getElementById('tableArea').innerHTML = '';
+  document.getElementById('tableArea').appendChild(table);
+
+  renderAllDataTable();
+}
+
+function renderAllDataTable() {
+  const headers = Object.keys(data[0]);
+  const selectorDiv = document.getElementById('columnSelector');
+
+  // 初回だけチェックボックスを作成
+  if (!selectorDiv.hasChildNodes()) {
+    selectorDiv.innerHTML = '<hr><h3>All data</h3><strong>表示する列：</strong><br>';
+    headers.forEach(h => {
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.value = h;
+      checkbox.checked = true;
+      checkbox.className = 'column-check';
+      checkbox.id = `col_${h}`;
+
+      const label = document.createElement('label');
+      label.htmlFor = `col_${h}`;
+      label.textContent = h;
+      label.style.marginRight = '10px';
+
+      selectorDiv.appendChild(checkbox);
+      selectorDiv.appendChild(label);
+    });
+
+    // チェックボックスにイベント追加（初回のみ）
+    document.querySelectorAll('.column-check').forEach(cb => {
+      cb.addEventListener('change', renderFilteredAllDataTable);
+    });
+  }
+
+  renderFilteredAllDataTable(); // 初期描画
+}
+
+function renderFilteredAllDataTable() {
+  const headers = Object.keys(data[0]);
+  const selectedCols = headers.filter(h => document.getElementById(`col_${h}`)?.checked);
+
+  // DataTableの既存インスタンスを破棄
+  if ($.fn.DataTable.isDataTable('#allDataTable table')) {
+    $('#allDataTable table').DataTable().destroy();
+  }
+
+  const allTable = document.createElement('table');
+  allTable.className = 'table table-striped table-bordered table-sm';
+  const thead = allTable.createTHead().insertRow();
+  selectedCols.forEach(h => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    thead.appendChild(th);
   });
+
+  const tbody = allTable.createTBody();
+  data.forEach(row => {
+    const tr = tbody.insertRow();
+    selectedCols.forEach(h => {
+      const td = tr.insertCell();
+      td.textContent = row[h];
+    });
+  });
+
+  document.getElementById('allDataTable').innerHTML = '';
+  document.getElementById('allDataTable').appendChild(allTable);
+
+  $('#allDataTable table').DataTable({
+    paging: true,
+    searching: true,
+    ordering: true
+  });
+  document.addEventListener('mouseover', function (e) {
+  const tooltipDiv = document.getElementById('tooltip');
+  if (e.target.classList.contains('tooltip-hover')) {
+    const text = e.target.getAttribute('data-tooltip');
+    tooltipDiv.textContent = text;
+    tooltipDiv.style.display = 'block';
+  }
+});
+
+document.addEventListener('mousemove', function (e) {
+  const tooltipDiv = document.getElementById('tooltip');
+  if (tooltipDiv.style.display === 'block') {
+    let x = e.clientX + 10;
+    let y = e.clientY + 10;
+
+    // 画面端チェック
+    const tooltipRect = tooltipDiv.getBoundingClientRect();
+    const maxX = window.innerWidth - tooltipRect.width - 10;
+    const maxY = window.innerHeight - tooltipRect.height - 10;
+
+    if (x > maxX) x = maxX;
+    if (y > maxY) y = maxY;
+
+    tooltipDiv.style.left = x + 'px';
+    tooltipDiv.style.top = y + 'px';
+  }
+});
+
+document.addEventListener('mouseout', function (e) {
+  const tooltipDiv = document.getElementById('tooltip');
+  if (e.target.classList.contains('tooltip-hover')) {
+    tooltipDiv.style.display = 'none';
+  }
+});
 }
 
-function randomColor() {
-  return `hsl(${Math.random() * 360},70%,70%)`;
-}
 
-// ここに初期CSVデータを入れると、すぐ動きます（必要なら言ってくださいね！）
+
 </script>
-
+<div id="tooltip" class="custom-tooltip"></div>
 </body>
 </html>
