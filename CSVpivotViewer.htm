@@ -32,6 +32,7 @@
 /* 列ラベルのスタイル */
 .label-col {
   background-color: #e8f5e9; /* 薄い緑 */
+  display: inline;
 }
 
 /* 項目の区切りごとに背景色を交互に変える */
@@ -123,6 +124,8 @@ function fillSelects() {
   }
   updateFilterValues('filter1');
   updateFilterValues('filter2');
+  updateFilterValues('filter3');
+  updateFilterValues('filter4');
   fillLabelSelects();
 }
 
