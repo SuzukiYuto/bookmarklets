@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    #plot { width: 100%; height: 700px; }
+    .axis-labels { margin: 1em 0; }
+    .controls { margin-bottom: 1em; }
+    textarea { width: 100%; }
+  </style>
+</head>
+<body>
+  <div class="axis-labels">
+    X軸: <input type="text" id="xlabel" value="X">
+    Y軸: <input type="text" id="ylabel" value="Y">
+    Z軸: <input type="text" id="zlabel" value="Z">
+  </div>
+
+  <!-- データセット1 -->
+  <h3>データセット1（赤）</h3>
+  <textarea id="data1" rows="5">
+A1	1	2	3
+A2	2	3	4
+A3	1	3	4
+  </textarea>
+  <div class="controls">
+    <button onclick="moveSelected('data1', 1, 0, 0)">X+1</button>
+    <button onclick="moveSelected('data1', -1, 0, 0)">X-1</button>
+    <button onclick="moveSelected('data1', 0, 1, 0)">Y+1</button>
+    <button onclick="moveSelected('data1', 0, -1, 0)">Y-1</button>
+    <button onclick="moveSelected('data1', 0, 0, 1)">Z+1</button>
+    <button onclick="moveSelected('data1', 0, 0, -1)">Z-1</button>
+    <button onclick="moveAll('data1', 1, 0, 0)">全X+1</button>
+    <button onclick="moveAll('data1', 0, 1, 0)">全Y+1</button>
+    <button onclick="moveAll('data1', 0, 0, 1)">全Z+1</button>
+  </div>
+
+  <!-- データセット2 -->
+  <h3>データセット2（緑）</h3>
+  <textarea id="data2" rows="5">
+B1	4	5	6
+B2	5	6	7
+B3	4	6	7
+B4	5	5	8
+  </textarea>
+  <div class="controls">
+    <button onclick="moveSelected('data2', 1, 0, 0)">X+1</button>
+    <button onclick="moveSelected('data2', -1, 0, 0)">X-1</button>
+    <button onclick="moveSelected('data2', 0, 1, 0)">Y+1</button>
+    <button onclick="moveSelected('data2', 0, -1, 0)">Y-1</button>
+    <button onclick="moveSelected('data2', 0, 0, 1)">Z+1</button>
+    <button onclick="moveSelected('data2', 0, 0, -1)">Z-1</button>
+    <button onclick="moveAll('data2', 1, 0, 0)">全X+1</button>
+    <button onclick="moveAll('data2', 0, 1, 0)">全Y+1</button>
+    <button onclick="moveAll('data2', 0, 0, 1)">全Z+1</button>
+  </div>
+
+  <!-- データセット3 -->
+  <h3>データセット3（青）</h3>
+  <textarea id="data3" rows="5">
+C1	7	8	9
+C2	8	9	10
+C3	7	9	10
+C4	8	8	11
+C5	7.5	9	11
+  </textarea>
+  <div class="controls">
+    <button onclick="moveSelected('data3', 1, 0, 0)">X+1</button>
+    <button onclick="moveSelected('data3', -1, 0, 0)">X-1</button>
+    <button onclick="moveSelected('data3', 0, 1, 0)">Y+1</button>
+    <button onclick="moveSelected('data3', 0, -1, 0)">Y-1</button>
+    <button onclick="moveSelected('data3', 0, 0, 1)">Z+1</button>
+    <button onclick="moveSelected('data3', 0, 0, -1)">Z-1</button>
+    <button onclick="moveAll('data3', 1, 0, 0)">全X+1</button>
+    <button onclick="moveAll('data3', 0, 1, 0)">全Y+1</button>
+    <button onclick="moveAll('data3', 0, 0, 1)">全Z+1</button>
+  </div>
+
+  <button onclick="plotAll()">プロット</button>
+  <div id="plot"></div>
+
+  <script>
+    function parsePoints(text) {
+      const lines = text.trim().split('\n');
+      const x = [], y = [], z = [], labels = [];
+      lines.forEach(line => {
+        const [label, xVal, yVal, zVal] = line.split('\t');
+        labels.push(label);
+        x.push(parseFloat(xVal));
+        y.push(parseFloat(yVal));
+        z.push(parseFloat(zVal));
+      });
+      return { x, y, z, labels };
+    }
+
+    function makeScatterTrace(x, y, z, labels, color, name) {
+      return {
+        x, y, z, text: labels,
+        mode: 'lines+markers+text',
+        type: 'scatter3d',
+        name: name + ' (点)',
+        textposition: 'top center',
+        marker: { size: 5, color: color },
+        line: { color: color }
+      };
+    }
+
+    function makeMeshTrace(x, y, z, color, name) {
+      if (x.length < 3) return null;
+      const triangles = [];
+      for (let i = 0; i < x.length - 2; i++) {
+        triangles.push({ i: i, j: i + 1, k: i + 2 });
+      }
+      return {
+        type: 'mesh3d',
+        x, y, z,
+        i: triangles.map(t => t.i),
+        j: triangles.map(t => t.j),
+        k: triangles.map(t => t.k),
+        opacity: 0.4,
+        color: color,
+        name: name + ' (面)',
+        showscale: false
+      };
+    }
+
+    function plotAll() {
+      const data = [];
+      const sets = [
+        { id: 'data1', color: 'red', name: '赤' },
+        { id: 'data2', color: 'green', name: '緑' },
+        { id: 'data3', color: 'blue', name: '青' }
+      ];
+
+      sets.forEach(set => {
+        const { x, y, z, labels } = parsePoints(document.getElementById(set.id).value);
+        data.push(makeScatterTrace(x, y, z, labels, set.color, set.name));
+        const mesh = makeMeshTrace(x, y, z, set.color, set.name);
+        if (mesh) data.push(mesh);
+      });
+
+      const layout = {
+        margin: { l: 0, r: 0, b: 0, t: 0 },
+        scene: {
+          xaxis: { title: document.getElementById('xlabel').value },
+          yaxis: { title: document.getElementById('ylabel').value },
+          zaxis: { title: document.getElementById('zlabel').value }
+        }
+      };
+
+      Plotly.newPlot('plot', data, layout);
+    }
+
+    function moveSelected(textareaId, dx, dy, dz) {
+      const textarea = document.getElementById(textareaId);
+      const lines = textarea.value.trim().split('\n');
+      const selectionStart = textarea.selectionStart;
+      const selectedLineIndex = textarea.value.substring(0, selectionStart).split('\n').length - 1;
+
+      if (selectedLineIndex < 0 || selectedLineIndex >= lines.length) return;
+
+      const parts = lines[selectedLineIndex].split('\t');
+      if (parts.length < 4) return;
+
+      parts[1] = (parseFloat(parts[1]) + dx).toFixed(2);
+      parts[2] = (parseFloat(parts[2]) + dy).toFixed(2);
+      parts[3] = (parseFloat(parts[3]) + dz).toFixed(2);
+
+      lines[selectedLineIndex] = parts.join('\t');
+      textarea.value = lines.join('\n');
+    }
+    function moveAll(textareaId, dx, dy, dz) {
+  const textarea = document.getElementById(textareaId);
+  const lines = textarea.value.trim().split('\n');
+  const updated = lines.map(line => {
+    const parts = line.split('\t');
+    if (parts.length < 4) return line;
+    parts[1] = (parseFloat(parts[1]) + dx).toFixed(2);
+    parts[2] = (parseFloat(parts[2]) + dy).toFixed(2);
+    parts[3] = (parseFloat(parts[3]) + dz).toFixed(2);
+    return parts.join('\t');
+  });
+  textarea.value = updated.join('\n');
+}
+  </script>
+</body>
+</html>
