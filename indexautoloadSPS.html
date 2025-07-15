@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>File Search System powered by KD</title>
+    <link href="source/style.css" rel="stylesheet" type="text/css" />
+    <link
+      href="source/jquery-ui-1.13.2/jquery-ui.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1/i18n/jquery.ui.datepicker-ja.min.js"></script>
+    <script src="source/script.js"></script>
+    <script>
+      $(document).ready(function () {
+        var buttonsData = [
+          ["月次", "月次|定期"],
+          ["資料", "資料"],
+          ["他社", "他社"],
+          ["議事録", "議事"],
+          ["教育", "教育|勉強|研修"],
+          ["ﾌﾛｰ", "^(?=.*ﾌﾛｰ)(?!.*ﾌﾛｰﾙ)(?!.*ﾌﾛｰﾗ)(?!.*ﾌﾛｰｽﾞ)(?!.*ﾌﾛｰﾄ).*$"],
+          ["ついて", "ついて"],
+          ["まとめ", "まとめ"],
+          ["まとめ ppt", "^(?=.*まとめ)(?=.*ppt).*$"],
+          ["まとめ xls", "^(?=.*まとめ)(?=.*xls).*$"],
+          ["まとめ doc", "^(?=.*まとめ)(?=.*doc).*$"],
+          ["MSG", "msg"],
+          ["PPT", "ppt"],
+          ["XLS", "xls"],
+          ["DOC", "doc"],
+          ["PDF", "pdf"],
+          ["実績,統計,集計", "実績|統計|集計"],
+          ["報告", "報告|結果|総括|ﾚﾋﾞｭｰ|進捗|ﾚﾎﾟｰﾄ"],
+	  ["ｼﾄﾗｽ", "ｼﾄﾗｽ|柑橘|citrus"],
+        ];
+
+        function setSearchWord(word) {
+          $("#search-in").val(word).change();
+        }
+
+        for (var i = 0; i < buttonsData.length; i++) {
+          var buttonText = buttonsData[i][0];
+          var searchWord = buttonsData[i][1];
+
+          var button = $("<button>")
+            .text(buttonText)
+            .click(
+              (function (word) {
+                return function () {
+                  setSearchWord(word);
+                };
+              })(searchWord)
+            );
+
+          $("#b").append(button);
+        }
+      });
+
+  $(document).ready(function () {
+    // CSVファイルを読み込む
+    $.ajax({
+      url: "http://sps.iss.ogawa.net/sites/study/tsukubalab/DocLib1/Material.csv",
+      dataType: "text",
+      success: function (data) {
+        // 読み込んだCSVデータを処理する関数を呼び出す
+        processCSV(data);
+      },
+      error: function () {
+        $("#err-list").append("<p>CSVの読み込みに失敗しました。</p>");
+      }
+    });
+
+    // CSVデータを処理する関数（例）
+    function processCSV(csvText) {
+      const lines = csvText.split("\n");
+      const result = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const cols = lines[i].split(",");
+        if (cols.length >= 3) {
+          result.push({
+            id: cols[0].trim(),
+            path: cols[1].trim(),
+            modified: cols[2].trim()
+          });
+        }
+      }
+
+      // ここで result を使ってツリー表示などを行う
+      console.log(result); // デバッグ用
+      // 例: displayTree(result);
+    }
+  });
+
+    </script>
+  </head>
+
+  <body>
+    <main>
+      <div id="load-form">
+        <input type="file" id="file" accept=".csv" />
+        <p id="burning-tofu">&#x1F4DB;</p>
+        <input type="button" id="reload-button" value="再読み込み" />
+
+        &nbsp;&nbsp;&nbsp;
+        <button style="width:240px" onclick="openLinksWithDates()">&#x1F4C4 ﾘｽﾄ表示</button>
+        &nbsp;&nbsp;&nbsp;
+
+        <a class="hint-text"
+          >最大表示件数
+          <div class="popup-hint">
+            （推奨 1000　値は目安で実際の表示件数と一致しないことがあります）
+          </div>
+        </a>
+        <select id="render-depth">
+          <option>200</option>
+          <option>500</option>
+          <option selected>1000</option>
+          <option>2000</option>
+          <option>5000</option>
+          <option>10000</option>
+          <option>無制限(非推奨)</option>
+        </select>
+
+
+
+
+
+        <br />
+        <p id="summary" style="font-size: 12px; color: green">
+          ↑「ファイルの選択」から、@CSVﾌｫﾙﾀﾞ内のファイル名データを選んでください（例：FL_data.csv)
+        </p>
+      </div>
+      <div id="main-pane">
+        <div id="search-form">
+          <p id="hit-count"></p>
+          <input
+            type="text"
+            id="search-in"
+            placeholder="input search words..."
+          /><br />
+
+          <input type="button" value="&#x1f50d;" id="search-trigger" />
+          <input
+            type="button"
+            value="&#x274c;"
+            onClick='document.getElementById("search-in").value = "";$("#search-in").change();'
+          />
+          <input
+            type="button"
+            value="&#x2796;"
+            onClick='let input=prompt("除外したい単語を入力","");
+			if(input === "") {return;}
+			let cV = $("#search-in").val();
+			if (cV.charAt(0) !== "^") {
+ 			 cV = "^(?=.*" + cV +")(?!.*"+ input + ").*$";
+ 			 } else {
+ 			 alert("既に正規表現されています。編集機能未実装のため手で処理してください。例えば、AND検索をした後、除外したい単語のみ?=を?!にします。");
+ 			 return;}
+			$("#search-in").val(cV);
+			$("#search-in").change();'
+          />
+          <input
+            type="button"
+            value="-JPEG"
+            ;
+            onClick='let cV = $("#search-in").val();
+			if (cV.charAt(0) !== "^") {
+ 			 cV = "^(?=.*" + cV +")(?!.*"+ "JPG" + ").*$";
+ 			 } else {
+ 			 alert("既に正規表現されています。編集機能未実装のため手で処理してください。例えば、AND検索をした後、除外したい単語のみ?=を?!にします。");
+ 			 return;}
+			$("#search-in").val(cV);
+			$("#search-in").change();'
+          />
+          <p />
+          <font style="font-size: 12px; color: green">検索ワード選択：</font>
+          <div id="b"></div>
+          <hr />
+          <font style="font-size: 12px; color: green">Prefix+検索語(AND)：</font
+          ><br />
+          <input
+            type="button"
+            value="DRﾁｪｯｸｼｰﾄ..."
+            onClick='let words = ["DR","ﾁｪｯｸ"];while(true){let input=prompt("DRﾁｪｯｸｼｰﾄとAND検索したい単語を入力(なければ空白でOK）。検索語＝" + words.join("+"),"");if(input === "") {break;}else{words.push(input);}};document.getElementById("search-in").value = "^(?=.*" + words.join(")(?=.*")+").*$";$("#search-in").change();'
+          />
+          <hr />
+          <font style="font-size: 12px; color: green">複合検索(AND,OR)：</font
+          ><br />
+          <input
+            type="button"
+            value="AND検索..."
+            onClick='let words = [];while(true){let input=prompt("AND検索したい単語を入力(最後は空白でOK）。検索語＝" + words.join("+"),"");if(input === "") {break;}else{words.push(input);}};document.getElementById("search-in").value = "^(?=.*" + words.join(")(?=.*")+").*$";$("#search-in").change();'
+          />
+          <input
+            type="button"
+            value="OR検索..."
+            onClick='let words = [];while(true){let input=prompt("OR検索したい単語を入力(最後は空白でOK）。検索語＝" + words.join("+"),"");if(input === "") {break;}else{words.push(input);}};document.getElementById("search-in").value = words.join("|");$("#search-in").change();'
+          />
+          <p>
+            <font style="font-size: 12px; color: green">日付選択：</font>
+          </p>
+
+          <p>From: <input type="text" id="datepicker-from" /></p>
+          <p>To: <input type="text" id="datepicker-to" /></p>
+
+          <input
+            type="button"
+            value="日付消去"
+            onClick='document.getElementById("datepicker-from").value = "";document.getElementById("datepicker-to").value = "";$("#search-in").change();'
+          />
+          <hr />
+          TIPS: 除外したい場合はAND検索した後、?=を?!に変更する
+          <hr />
+          <p>検索履歴</p>
+          <div
+            id="history-wrapper"
+            style="display: flex; flex-direction: column-reverse"
+          ></div>
+        </div>
+
+        <!--<textarea id="result"></textarea>//-->
+        <div id="result-tree"></div>
+      </div>
+      <div id="dev-tools">
+        <div id="err-list">
+          <h3>エラー：</h3>
+        </div>
+        <div id="dev-comment">
+          <h2>今できること</h2>
+          <p>
+            (id),(path),(last
+            modified)の形式になっているcsvを読み込むと整形してツリー表示する
+          </p>
+          <p>
+            第3階層まで展開された状態で表示(大量のファイルに対して加速度的に重くなるため)
+          </p>
+          <p>
+            フォルダは名称をクリックで展開/折り畳み可能、リンクアイコンをクリックすると別タブで開く
+          </p>
+          <p>ファイルは名称をクリックで開く(ダウンロードする)</p>
+          <p>検索をかけられる</p>
+          <h2>開発要件(具体的に)：</h2>
+          <p>csvを取得するところもやる？</p>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
