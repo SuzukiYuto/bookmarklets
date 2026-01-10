@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>時計とカレンダー＋Yahooニュース（＋10分表示）</title>
+<style>
+  body {
+    margin: 0;
+    font-family: "Segoe UI", "Hiragino Sans", "Meiryo", sans-serif;
+    display: flex;
+    height: 100vh;
+    background: #333;
+  }
+
+  /* 左右のレイアウト */
+  #left {
+    width: 40%;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+   #right {
+    width: 60%;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  /* カレンダー部分 */
+  #calendar-container {
+    height: 66%;
+    background: white;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    overflow: auto;
+  }
+
+  /* ニュース部分 */
+  #news {
+    height: 33%;
+    background: #fff;
+    border-radius: 10px;
+    margin-top: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    overflow-y: auto;
+  }
+  #news h3 {
+    margin-top: 0;
+    font-size: 1em;
+  }
+
+  /* 時計部分 */
+  #clock {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background: #000;
+    color: #fff;
+    border-radius: 15px;
+    box-shadow: inset 0 0 10px rgba(255,255,255,0.1);
+    text-align: center;
+  }
+  #time {
+    font-size: 2em;
+  }
+  #plus10 {
+    font-size: 12em;
+    color: #ffd54f;
+    margin-top: 3px;
+  }
+  #date {
+    font-size: 1.5em;
+    margin-top: 10px;
+  }
+
+  /* カレンダー表示 */
+
+#calendar-container {
+  background: #000;   /* ← white → black に変更 */
+  color: #fff;        /* 文字色を白で見やすく */
+}
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+  }
+  th {
+    background: #1976d2;
+    color: white;
+    padding: 5px;
+  }
+  td {
+    padding: 8px;
+    border: 1px solid #ddd;
+  }
+  td.today {
+    background: #ffecb3;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<div id="left">
+  <div id="calendar-container"></div>
+  <div id="news">
+    <h3>Yahoo!ニュース ヘッドライン</h3>
+    <ul id="news-list"></ul>
+  </div>
+</div>
+
+<div id="right">
+  <div id="clock">
+    <div id="time"></div>
+    <div id="plus10"></div>
+    <div id="date"></div>
+  </div>
+</div>
+
+<script>
+/* ========= 時計 ========= */
+function updateClock() {
+  const now = new Date();
+  const plus10 = new Date(now.getTime() + 10 * 60 * 1000);
+
+  // 年を下2桁表示（例：2026 → 26）
+  const year2 = String(now.getFullYear()).slice(-2);
+
+  // 時刻フォーマット関数
+  const formatTime = (d) => d.toLocaleTimeString('ja-JP', {
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+
+  document.getElementById("plus10").textContent = `${formatTime(plus10)}`;
+  document.getElementById("time").textContent = `${formatTime(now)}`;
+  
+  document.getElementById("date").textContent = 
+    `${year2}年 ${now.getMonth() + 1}月 ${now.getDate()}日 (${now.toLocaleDateString('ja-JP', { weekday: 'short' })})`;
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+/* ========= カレンダー ========= */
+function generateCalendar(year, month) {
+  const container = document.getElementById("calendar-container");
+  container.innerHTML = "";
+
+  const year2 = String(year).slice(-2);
+  const date = new Date(year, month - 1, 1);
+  const monthName = date.toLocaleString('ja-JP', { month: 'long' });
+  const title = document.createElement("h2");
+  title.textContent = `${year2}年 ${monthName}`;
+  container.appendChild(title);
+
+  const table = document.createElement("table");
+  const headerRow = document.createElement("tr");
+  const days = ['日','月','火','水','木','金','土'];
+  days.forEach(d => {
+    const th = document.createElement("th");
+    th.textContent = d;
+    headerRow.appendChild(th);
+  });
+  table.appendChild(headerRow);
+
+  const firstDay = new Date(year, month - 1, 1).getDay();
+  const lastDate = new Date(year, month, 0).getDate();
+  let row = document.createElement("tr");
+
+  // 空セルを追加
+  for (let i = 0; i < firstDay; i++) {
+    row.appendChild(document.createElement("td"));
+  }
+
+  for (let day = 1; day <= lastDate; day++) {
+    const cell = document.createElement("td");
+    cell.textContent = day;
+
+    const today = new Date();
+    if (year === today.getFullYear() && month === (today.getMonth() + 1) && day === today.getDate()) {
+      cell.classList.add("today");
+    }
+
+    row.appendChild(cell);
+    if ((firstDay + day) % 7 === 0) {
+      table.appendChild(row);
+      row = document.createElement("tr");
+    }
+  }
+  table.appendChild(row);
+  container.appendChild(table);
+}
+
+const now = new Date();
+generateCalendar(now.getFullYear(), now.getMonth() + 1);
+
+/* ========= Yahooニュース ========= */
+// ※ CORS制限を回避するため、ローカルサーバーでの実行推奨
+async function loadNews() {
+  const url = "https://news.yahoo.co.jp/rss/topics/top-picks.xml";
+  try {
+    const res = await fetch(url);
+    const text = await res.text();
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(text, "text/xml");
+    const items = xml.querySelectorAll("item");
+    const list = document.getElementById("news-list");
+    list.innerHTML = "";
+    items.forEach((item, i) => {
+      if (i >= 8) return; // 最大8件
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.textContent = item.querySelector("title").textContent;
+      a.href = item.querySelector("link").textContent;
+      a.target = "_blank";
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+  } catch (e) {
+    console.error("ニュース取得失敗:", e);
+  }
+}
+loadNews();
+</script>
+
+</body>
+</html>
