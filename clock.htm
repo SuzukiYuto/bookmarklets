@@ -203,26 +203,24 @@ generateCalendar(now.getFullYear(), now.getMonth() + 1);
 /* ===== ニュース表示 ===== */
 async function loadNews() {
   const rss = "https://news.yahoo.co.jp/rss/topics/top-picks.xml";
-  const api = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}`;
+  const res = await fetch(rss);
+  const xmlText = await res.text();
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(xmlText, "application/xml");
+  const items = xml.querySelectorAll("item");
+  const list = document.getElementById("newsList");
+  list.innerHTML = "";
 
-  try {
-    const res = await fetch(api);
-    const data = await res.json();
-    const list = document.getElementById("newsList");
-    list.innerHTML = "";
-
-    data.items.slice(0, 10).forEach(item => {
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <a href="${item.link}" target="_blank">${item.title}</a>
-        <span class="time">${new Date(item.pubDate).toLocaleString("ja-JP")}</span>
-      `;
-      list.appendChild(li);
-    });
-  } catch (e) {
-    document.getElementById("newsList").textContent = "ニュースを取得できませんでした。";
-    console.error(e);
-  }
+  items.forEach((item, i) => {
+    if (i >= 10) return; // 10件まで
+    const title = item.querySelector("title").textContent;
+    const link = item.querySelector("link").textContent;
+    const pubDate = item.querySelector("pubDate").textContent;
+    const li = document.createElement("li");
+    li.innerHTML = `<a href="${link}" target="_blank">${title}</a>
+       <span class="time">${new Date(pubDate).toLocaleString("ja-JP")}</span>`;
+    list.appendChild(li);
+  });
 }
 loadNews();
 setInterval(loadNews, 30 * 60 * 1000);
@@ -231,6 +229,7 @@ setInterval(loadNews, 30 * 60 * 1000);
 </body>
 
 </html>
+
 
 
 
