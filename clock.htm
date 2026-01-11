@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>スイス風アナログ時計＋デジタル（+10分）</title>
+<title>スイス風時計＋天気（+10分）</title>
 
 <style>
 body {
@@ -80,7 +80,6 @@ td.today {
   position: absolute;
   width: 100%;
   height: 100%;
-  text-align: center;
   transform: rotate(calc(30deg * var(--i)));
 }
 
@@ -120,18 +119,18 @@ td.today {
 
 .second {
   width: 2px;
-  height: 130px;
+  height: 120px; /* 80% */
   background: #d32f2f;
 }
 
-/* 秒針先端の赤丸 */
+/* 秒針先端の赤丸（3倍） */
 .second::after {
   content: "";
   position: absolute;
-  top: -18px;              /* 少し前に出す */
+  top: -18px;
   left: 50%;
-  width: 30px;             /* 10px → 30px */
-  height: 30px;            /* 10px → 30px */
+  width: 30px;
+  height: 30px;
   background: #d32f2f;
   border-radius: 50%;
   transform: translateX(-50%);
@@ -149,27 +148,53 @@ td.today {
   transform: translate(-50%, -50%);
 }
 
-/* ===== デジタル表示（左下） ===== */
+/* ===== デジタル表示（左下 / +10分） ===== */
 #digital {
   position: fixed;
   left: 20px;
   bottom: 20px;
-  color: #fff;
-  font-family: "Segoe UI", monospace;
-  text-align: left;
-  opacity: 0.85;
+  font-family: monospace;
+  opacity: 0.9;
 }
 
 #digital-time {
-  font-size: 5em;
+  font-size: 8em;
   font-weight: bold;
   letter-spacing: 2px;
 }
 
 #digital-date {
-  font-size: 1em;
+  font-size: 3em;
   color: #ccc;
-  margin-top: 4px;
+}
+
+/* ===== 天気表示（右下） ===== */
+#weather {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0,0,0,0.6);
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: inset 0 0 10px rgba(255,255,255,0.1);
+}
+
+#weather img {
+  width: 48px;
+  height: 48px;
+}
+
+#weather-temp {
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+#weather-desc {
+  font-size: 0.9em;
+  color: #ccc;
 }
 </style>
 </head>
@@ -194,10 +219,19 @@ td.today {
   </div>
 </div>
 
-<!-- デジタル表示 -->
+<!-- デジタル -->
 <div id="digital">
   <div id="digital-time"></div>
   <div id="digital-date"></div>
+</div>
+
+<!-- 天気 -->
+<div id="weather">
+  <img id="weather-icon" alt="weather">
+  <div>
+    <div id="weather-temp"></div>
+    <div id="weather-desc"></div>
+  </div>
 </div>
 
 <script>
@@ -297,6 +331,32 @@ function generateCalendar(year, month) {
 
 const now = new Date();
 generateCalendar(now.getFullYear(), now.getMonth() + 1);
+
+/* ===== 東京の天気 ===== */
+async function loadTokyoWeather() {
+  const API_KEY = "579376d4a1533024ba302c945c6555d6";
+  const url =
+    `https://api.openweathermap.org/data/2.5/weather` +
+    `?q=Tokyo,jp&units=metric&lang=ja&appid=${API_KEY}`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    document.getElementById("weather-temp").textContent =
+      `${Math.round(data.main.temp)}℃`;
+    document.getElementById("weather-desc").textContent =
+      data.weather[0].description;
+    document.getElementById("weather-icon").src =
+      `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+
+  } catch {
+    document.getElementById("weather-temp").textContent = "取得失敗";
+  }
+}
+
+loadTokyoWeather();
+setInterval(loadTokyoWeather, 10 * 60 * 1000);
 </script>
 
 </body>
