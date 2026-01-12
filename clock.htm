@@ -73,7 +73,8 @@ td.today {
   box-shadow:
     inset 0 0 20px rgba(255,255,255,0.1),
     0 0 30px rgba(0,0,0,0.8);
-  margin-top:-40px;
+    transform: scale(0.5);
+  transform-origin: top right;
 }
 
 /* インデックス */
@@ -159,7 +160,7 @@ td.today {
 }
 
 #digital-time {
-  font-size: 11em;
+  font-size: 22em;
   font-weight: bold;
   letter-spacing: 2px;
 }
@@ -362,6 +363,3 @@ setInterval(loadTokyoWeather, 10 * 60 * 1000);
 
 </body>
 </html>
-
-
-
