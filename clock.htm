@@ -80,17 +80,17 @@ td.today {
 }
 
 #weather-temp {
-  font-size: 1.8em;
+  font-size: 3em;
   font-weight: bold;
 }
 
 #weather-desc {
-  font-size: 1.2em;
+  font-size: 1.5em;
   color: #ccc;
 }
   
 #weather-range {
-  font-size: 0.85em;
+  font-size: 1.5em;
   color: #ccc;
 }
 /* ===== アナログ時計 ===== */
@@ -332,7 +332,7 @@ async function loadTokyoWeather() {
       `${temp}℃`;
 
     document.getElementById("weather-range").textContent =
-      `最高 ${tempMax}℃ / 最低 ${tempMin}℃`;
+      `高 ${tempMax}℃ / 低 ${tempMin}℃`;
 
     document.getElementById("weather-desc").textContent =
       data.weather[0].description;
@@ -351,6 +351,7 @@ setInterval(loadTokyoWeather, 30 * 60 * 1000);
 
 </body>
 </html>
+
 
 
 
