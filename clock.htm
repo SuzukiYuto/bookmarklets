@@ -329,7 +329,7 @@ async function loadTokyoWeather() {
     const tempMax = Math.round(data.main.temp_max);
 
     document.getElementById("weather-temp").textContent =
-      `${temp}<small>℃</small>`;
+      `${temp}℃`;
 
     document.getElementById("weather-range").textContent =
       `高 ${tempMax}℃ / 低 ${tempMin}℃`;
@@ -351,6 +351,7 @@ setInterval(loadTokyoWeather, 30 * 60 * 1000);
 
 </body>
 </html>
+
 
 
 
