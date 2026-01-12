@@ -315,7 +315,7 @@ generateCalendar(now.getFullYear(), now.getMonth() + 1);
 
 /* ===== 天気（東京） ===== */
 async function loadTokyoWeather() {
-  const API_KEY = "あなたのAPIキー";
+  const API_KEY = "579376d4a1533024ba302c945c6555d6";
   const url =
     `https://api.openweathermap.org/data/2.5/weather` +
     `?q=Tokyo,jp&units=metric&lang=ja&appid=${API_KEY}`;
@@ -351,6 +351,7 @@ setInterval(loadTokyoWeather, 30 * 60 * 1000);
 
 </body>
 </html>
+
 
 
 
