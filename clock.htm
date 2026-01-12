@@ -64,7 +64,7 @@ td.today {
 
 /* ===== 天気 ===== */
 #weather {
-  flex: 0 0 200px;
+  flex: 0 0 180px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -75,24 +75,24 @@ td.today {
 }
 
 #weather img {
-  width: 64px;
-  height: 64px;
+  width: 96px;
+  height: 96px;
 }
 
 #weather-temp {
-  font-size: 1.4em;
+  font-size: 1.8em;
   font-weight: bold;
 }
 
 #weather-desc {
-  font-size: 0.9em;
+  font-size: 1.2em;
   color: #ccc;
 }
 
 /* ===== アナログ時計 ===== */
 .clock {
-  width: 127px;
-  height: 127px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   background: radial-gradient(circle, #111 60%, #000 100%);
   border: 4px solid #222;
@@ -170,7 +170,7 @@ td.today {
 }
 
 #digital-time {
-  font-size: 18em;
+  font-size: 22em;
   font-weight: bold;
 }
 
@@ -246,13 +246,13 @@ function updateDigitalClock() {
       minute: '2-digit'
     });
 
-  document.getElementById("digital-date").textContent =
+/* document.getElementById("digital-date").textContent =
     plus10.toLocaleDateString('zh-CN', {
       year: '2-digit',
       month: '2-digit',
       day: '2-digit',
       weekday: 'short'
-    });
+    }); */
 }
 setInterval(updateDigitalClock, 1000);
 updateDigitalClock();
@@ -335,3 +335,4 @@ setInterval(loadTokyoWeather, 30 * 60 * 1000);
 
 </body>
 </html>
+
