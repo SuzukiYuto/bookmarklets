@@ -192,14 +192,16 @@ td.today {
 <div id="top-bar">
   <div id="calendar-container"></div>
 
-  <div id="weather">
-    <img id="weather-icon" alt="weather">
-    <div>
-      <div id="weather-temp">--℃</div>
-      <div id="weather-range"></div>
-      <div id="weather-desc">--</div>
-    </div>
+<div id="weather">
+  <img id="weather-icon" alt="weather">
+  <div>
+    <div id="weather-now"></div>
+    <div id="weather-range"></div>
+    <div id="weather-desc"></div>
+    <hr>
+    <div id="weather-night"></div>
   </div>
+</div>
 
   <div class="clock">
     <div class="hand hour" id="hour"></div>
@@ -316,29 +318,55 @@ generateCalendar(now.getFullYear(), now.getMonth() + 1);
 /* ===== 天気（東京） ===== */
 async function loadTokyoWeather() {
   const API_KEY = "579376d4a1533024ba302c945c6555d6";
-  const url =
+
+  const currentURL =
+    `https://api.openweathermap.org/data/2.5/weather` +
+    `?q=Tokyo,jp&units=metric&lang=ja&appid=${API_KEY}`;
+
+  const forecastURL =
     `https://api.openweathermap.org/data/2.5/forecast` +
     `?q=Tokyo,jp&units=metric&lang=ja&appid=${API_KEY}`;
 
   try {
-    const res = await fetch(url);
-    const data = await res.json();
+    /* ===== 現在の天気 ===== */
+    const currentRes = await fetch(currentURL);
+    const current = await currentRes.json();
+
+    const nowTemp = Math.round(current.main.temp);
+    const minTemp = Math.round(current.main.temp_min);
+    const maxTemp = Math.round(current.main.temp_max);
+    const nowDesc = current.weather[0].description;
+    const nowIcon = current.weather[0].icon;
+
+    document.getElementById("weather-now").innerHTML =
+      `現在 ${nowTemp}<small>℃</small>`;
+
+    document.getElementById("weather-range").innerHTML =
+      `最高 ${maxTemp}<small>℃</small> / 最低 ${minTemp}<small>℃</small>`;
+
+    document.getElementById("weather-desc").textContent =
+      nowDesc;
+
+    document.getElementById("weather-icon").src =
+      `https://openweathermap.org/img/wn/${nowIcon}@2x.png`;
+
+    /* ===== 深夜（0時前後）の天気 ===== */
+    const forecastRes = await fetch(forecastURL);
+    const forecast = await forecastRes.json();
 
     const now = new Date();
-
-    // 今日 or 明日の「0時」
     const targetMidnight = new Date(now);
+
+    // 夜なら翌日の0時を狙う
     if (now.getHours() >= 12) {
-      // 夕方以降なら翌日の0時
       targetMidnight.setDate(now.getDate() + 1);
     }
     targetMidnight.setHours(0, 0, 0, 0);
 
-    // 0時に最も近い予報を探す
     let closest = null;
     let minDiff = Infinity;
 
-    data.list.forEach(item => {
+    forecast.list.forEach(item => {
       const t = new Date(item.dt * 1000);
       const diff = Math.abs(t - targetMidnight);
       if (diff < minDiff) {
@@ -347,29 +375,17 @@ async function loadTokyoWeather() {
       }
     });
 
-    if (!closest) return;
+    if (closest) {
+      const nightTemp = Math.round(closest.main.temp);
+      const nightDesc = closest.weather[0].description;
 
-    const temp = Math.round(closest.main.temp);
-    const tempMin = Math.round(closest.main.temp_min);
-    const tempMax = Math.round(closest.main.temp_max);
-    const desc = closest.weather[0].description;
-    const icon = closest.weather[0].icon;
-
-    // 表示
-    document.getElementById("weather-temp").innerHTML =
-      `深夜 ${temp}<small>℃</small>`;
-
-    document.getElementById("weather-range").innerHTML =
-      `最高 ${tempMax}<small>℃</small> / 最低 ${tempMin}<small>℃</small>`;
-
-    document.getElementById("weather-desc").textContent = desc;
-
-    document.getElementById("weather-icon").src =
-      `https://openweathermap.org/img/wn/${icon}@2x.png`;
+      document.getElementById("weather-night").innerHTML =
+        `🌙 深夜 ${nightTemp}<small>℃</small> / ${nightDesc}`;
+    }
 
   } catch (e) {
     document.getElementById("weather-desc").textContent =
-      "深夜の天気取得失敗";
+      "天気取得失敗";
   }
 }
 
@@ -379,6 +395,7 @@ setInterval(loadTokyoWeather, 30 * 60 * 1000);
 
 </body>
 </html>
+
 
 
 
