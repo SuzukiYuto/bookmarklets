@@ -343,7 +343,7 @@ async function loadTokyoWeather() {
     const nowIcon = current.weather[0].icon;
 
     document.getElementById("weather-now").innerHTML =
-      `現在 ${nowTemp}<small>℃</small>`;
+      `${nowTemp}<small>℃</small>`;
 
     document.getElementById("weather-range").innerHTML =
       `高 ${maxTemp}<small>℃</small> / 低 ${minTemp}<small>℃</small>`;
@@ -399,6 +399,7 @@ setInterval(loadTokyoWeather, 30 * 60 * 1000);
 
 </body>
 </html>
+
 
 
 
