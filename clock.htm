@@ -331,57 +331,74 @@ async function loadTokyoWeather() {
     `https://api.openweathermap.org/data/2.5/forecast` +
     `?q=Tokyo,jp&units=metric&lang=ja&appid=${API_KEY}`;
 
-  try {
+ try {
     /* ===== 現在の天気 ===== */
     const currentRes = await fetch(currentURL);
     const current = await currentRes.json();
 
     const nowTemp = Math.round(current.main.temp);
-    const minTemp = Math.round(current.main.temp_min);
-    const maxTemp = Math.round(current.main.temp_max);
     const nowDesc = current.weather[0].description;
     const nowIcon = current.weather[0].icon;
 
     document.getElementById("weather-now").innerHTML =
       `${nowTemp}<small>℃</small>`;
 
-    document.getElementById("weather-range").innerHTML =
-      `高 ${maxTemp}<small>℃</small> / 低 ${minTemp}<small>℃</small>`;
-
-    document.getElementById("weather-desc").textContent =
-      nowDesc;
+    document.getElementById("weather-desc").textContent = nowDesc;
 
     document.getElementById("weather-icon").src =
       `https://openweathermap.org/img/wn/${nowIcon}@2x.png`;
 
-    /* ===== 深夜（0時前後）の天気 ===== */
+    /* ===== 予報（今日の最低・最高 ＋ 深夜） ===== */
     const forecastRes = await fetch(forecastURL);
     const forecast = await forecastRes.json();
 
     const now = new Date();
-    const targetMidnight = new Date(now);
+    const todayY = now.getFullYear();
+    const todayM = now.getMonth();
+    const todayD = now.getDate();
 
-    // 夜なら翌日の0時を狙う
+    let todayMin = Infinity;
+    let todayMax = -Infinity;
+
+    // 今日の0時
+    const targetMidnight = new Date(now);
     if (now.getHours() >= 12) {
-      targetMidnight.setDate(now.getDate() + 1);
+      targetMidnight.setDate(todayD + 1);
     }
     targetMidnight.setHours(0, 0, 0, 0);
 
-    let closest = null;
+    let closestNight = null;
     let minDiff = Infinity;
 
     forecast.list.forEach(item => {
       const t = new Date(item.dt * 1000);
+
+      // ✅ 今日分の最低・最高
+      if (
+        t.getFullYear() === todayY &&
+        t.getMonth() === todayM &&
+        t.getDate() === todayD
+      ) {
+        todayMin = Math.min(todayMin, item.main.temp_min);
+        todayMax = Math.max(todayMax, item.main.temp_max);
+      }
+
+      // ✅ 深夜（0時前後）
       const diff = Math.abs(t - targetMidnight);
       if (diff < minDiff) {
         minDiff = diff;
-        closest = item;
+        closestNight = item;
       }
     });
 
-    if (closest) {
-      const nightTemp = Math.round(closest.main.temp);
-      const nightDesc = closest.weather[0].description;
+    // 今日の最低・最高を表示
+    document.getElementById("weather-range").innerHTML =
+      `高 ${Math.round(todayMax)}<small>℃</small> / 低 ${Math.round(todayMin)}<small>℃</small>`;
+
+    // 深夜の天気・気温
+    if (closestNight) {
+      const nightTemp = Math.round(closestNight.main.temp);
+      const nightDesc = closestNight.weather[0].description;
 
       document.getElementById("weather-night").innerHTML =
         `🌙 ${nightTemp}<small>℃</small> / ${nightDesc}`;
@@ -399,6 +416,7 @@ setInterval(loadTokyoWeather, 30 * 60 * 1000);
 
 </body>
 </html>
+
 
 
 
