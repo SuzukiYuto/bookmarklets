@@ -79,7 +79,7 @@ td.today {
   height: 128px;
 }
 
-#weather-temp {
+#weather-now {
   font-size: 3em;
   font-weight: bold;
 }
@@ -90,6 +90,10 @@ td.today {
 }
   
 #weather-range {
+  font-size: 1.5em;
+  color: #ccc;
+}
+#weather-night {
   font-size: 1.5em;
   color: #ccc;
 }
@@ -342,7 +346,7 @@ async function loadTokyoWeather() {
       `現在 ${nowTemp}<small>℃</small>`;
 
     document.getElementById("weather-range").innerHTML =
-      `最高 ${maxTemp}<small>℃</small> / 最低 ${minTemp}<small>℃</small>`;
+      `高 ${maxTemp}<small>℃</small> / 低 ${minTemp}<small>℃</small>`;
 
     document.getElementById("weather-desc").textContent =
       nowDesc;
@@ -380,7 +384,7 @@ async function loadTokyoWeather() {
       const nightDesc = closest.weather[0].description;
 
       document.getElementById("weather-night").innerHTML =
-        `🌙 深夜 ${nightTemp}<small>℃</small> / ${nightDesc}`;
+        `🌙 ${nightTemp}<small>℃</small> / ${nightDesc}`;
     }
 
   } catch (e) {
@@ -395,6 +399,7 @@ setInterval(loadTokyoWeather, 30 * 60 * 1000);
 
 </body>
 </html>
+
 
 
 
