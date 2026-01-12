@@ -107,7 +107,7 @@ td.today {
   transform: scale(1.5, 1.5);
   transform-origin: center;
   margin-top: 30px;
-  margin-right: -150px;
+  margin-right: -200px;
 }
 
 /* インデックス */
@@ -329,7 +329,7 @@ async function loadTokyoWeather() {
     const tempMax = Math.round(data.main.temp_max);
 
     document.getElementById("weather-temp").textContent =
-      `${temp}℃`;
+      `${temp}<small>℃</small>`;
 
     document.getElementById("weather-range").textContent =
       `高 ${tempMax}℃ / 低 ${tempMin}℃`;
@@ -351,6 +351,7 @@ setInterval(loadTokyoWeather, 30 * 60 * 1000);
 
 </body>
 </html>
+
 
 
 
