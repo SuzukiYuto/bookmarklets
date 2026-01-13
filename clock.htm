@@ -392,8 +392,9 @@ async function loadTokyoWeather() {
     });
 
     // 今日の最低・最高を表示
+   const range = await getTodayTemperatureRange();
     document.getElementById("weather-range").innerHTML =
-      `${Math.round(todayMax)}<small>℃</small> / ${Math.round(todayMin)}<small>℃</small>`;
+      `${range.max}<small>℃</small> / ${range.min}<small>℃</small>`;
 
     // 深夜の天気・気温
     if (closestNight) {
@@ -410,6 +411,72 @@ async function loadTokyoWeather() {
   }
 }
 
+  async function getTodayTemperatureRange() {
+  const API_KEY = "579376d4a1533024ba302c945c6555d6";
+  const url =
+    `https://api.openweathermap.org/data/2.5/forecast` +
+    `?q=Tokyo,jp&units=metric&lang=ja&appid=${API_KEY}`;
+
+  const now = new Date();
+  const todayKey = `${now.getFullYear()}${now.getMonth()}${now.getDate()}`;
+
+  // 🔍 キャッシュ確認
+  const saved = localStorage.getItem("weatherToday");
+  if (saved) {
+    const data = JSON.parse(saved);
+    if (data.key === todayKey) {
+      // ✅ 今日分が保存されていれば再利用
+      console.log("✔ 今日の気温データを再利用");
+      return data.range;
+    }
+  }
+
+  // 6時前は前日のデータ再利用にする
+  if (now.getHours() < 6 && saved) {
+    const data = JSON.parse(saved);
+    console.log("🌅 6時前のため前日データ再利用");
+    return data.range;
+  }
+
+  // ✅ 新規取得
+  console.log("🌤 気温データを取得中…");
+  const res = await fetch(url);
+  const data = await res.json();
+
+  const todayY = now.getFullYear();
+  const todayM = now.getMonth();
+  const todayD = now.getDate();
+
+  let todayMin = Infinity;
+  let todayMax = -Infinity;
+
+  data.list.forEach(item => {
+    const t = new Date(item.dt * 1000);
+    // 当日（0〜23時）のデータを集計
+    if (
+      t.getFullYear() === todayY &&
+      t.getMonth() === todayM &&
+      t.getDate() === todayD
+    ) {
+      todayMin = Math.min(todayMin, item.main.temp_min);
+      todayMax = Math.max(todayMax, item.main.temp_max);
+    }
+  });
+
+  const range = {
+    min: Math.round(todayMin),
+    max: Math.round(todayMax)
+  };
+
+  // ✅ 保存（ブラウザに保持）
+  localStorage.setItem(
+    "weatherToday",
+    JSON.stringify({ key: todayKey, range })
+  );
+
+  return range;
+}
+  
 loadTokyoWeather();
 setInterval(loadTokyoWeather, 30 * 60 * 1000);
 setInterval(() => location.reload(), 60 * 60 * 1000);
@@ -417,6 +484,7 @@ setInterval(() => location.reload(), 60 * 60 * 1000);
 
 </body>
 </html>
+
 
 
 
