@@ -393,7 +393,7 @@ async function loadTokyoWeather() {
 
     // 今日の最低・最高を表示
     document.getElementById("weather-range").innerHTML =
-      `高 ${Math.round(todayMax)}<small>℃</small> / 低 ${Math.round(todayMin)}<small>℃</small>`;
+      `${Math.round(todayMax)}<small>℃</small> / ${Math.round(todayMin)}<small>℃</small>`;
 
     // 深夜の天気・気温
     if (closestNight) {
@@ -412,10 +412,12 @@ async function loadTokyoWeather() {
 
 loadTokyoWeather();
 setInterval(loadTokyoWeather, 30 * 60 * 1000);
+setInterval(() => location.reload(), 60 * 60 * 1000);
 </script>
 
 </body>
 </html>
+
 
 
 
